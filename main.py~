@@ -31,7 +31,7 @@ def readfile():
     return file
     
 def isconsistant(entries):
-# http://stackoverflow.com/a/3295662
+# http://stackoverflow.com/questions/3294889/iterating-over-dictionaries-for-loops-in-python
     for entry in entries:
       print(entries[entry].weight)
 
