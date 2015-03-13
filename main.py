@@ -22,6 +22,10 @@ def readfile():
             user_input = get_user_input("Filename? ")
             
     return file
+    
+def isconsistant(entries):
+    for entry in entries:
+        
       
 class entry():
     # class for storing (attribute, value) pairs and the (decision, concept) pair
