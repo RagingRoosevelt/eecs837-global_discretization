@@ -9,11 +9,15 @@ def get_user_input(message):
     return user_input
 
 
-# function to get filename from user and then open a file
-def openfile():
+# function to get filename from user (if none specified) and then open a file
+def openfile(path=""):
+    if path == "":
+        # Get filename from user
+        user_input = get_user_input("Filename? ")
+    else:
+        user_input = path
 
-    # Get filename from user
-    user_input = get_user_input("Filename? ")
+    
     while True:
         try:
             # try to open file
@@ -25,3 +29,5 @@ def openfile():
             user_input = get_user_input("Filename? ")
             
     return file
+
+
