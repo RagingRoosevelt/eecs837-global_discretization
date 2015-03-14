@@ -1,8 +1,13 @@
+import random
+from time import sleep
+
 class entry():
     # class for storing (attribute, value) pairs and the (decision, concept) pair
-    def __init__(self, **attr):
-        for key in attr:
-            setattr(self, key, attr[key])
+    def __init__(self, attributes, decision):
+        self.A = {}
+        for i in range(0,len(attributes)):
+            self.A[i] = attributes[i]
+        self.D = decision
 
 
 def get_user_input(message):
@@ -30,6 +35,37 @@ def readfile():
             
     return file
     
+def getAttributes(entry):
+    attributes = []
+    for k,v in (entry.__dict__).items():
+        attributes.append(k)
+    decision = [attributes[-1]]
+    del attributes[-1]
+    return attributes,decision
+    
+def partitionD(entries):
+    Dpart = [[0]]
+    concepts = [entries[0].D]
+    
+    # Build partition identifiers
+    for i in range(0, len(entries)):
+        if not(entries[i].D in concepts):
+            Dpart.append([i])
+            concepts.append(entries[i].D)
+            print(entries[i].D + " (" + str(i) + ") not found")
+            
+    # Finish populating partition
+    for i in range(0, len(entries)):
+        for j in range(0, len(Dpart)):
+            if not(i in Dpart[j]) and (entries[i].D == concepts[j]):
+                Dpart[j].append(i)
+        
+    print(Dpart)
+    return Dpart
+    
+
+#def partitionAttribute(entries)
+    
 def isconsistant(entries):
 # http://stackoverflow.com/a/3295662
     for entry in entries:
@@ -39,8 +75,23 @@ def isconsistant(entries):
 
 #file = readfile()
 entries = {}
-entries[0] = entry(height=12123.1, weight=1, noise=122, price="vhasdf")
-entries[1] = entry(height=123.1, weight=12312.12312, noise=12312, price="vh")
+for i in range(0,10):
+    attributes = [random.randint(0, 10), random.randint(20,30), random.randint(40, 50)]
+    
+    temp = random.randint(0, 2)
+    if temp == 0:
+        decision = "low"
+    elif temp == 1:
+        decision = "med"
+    else:
+        decision = "high"
+    entries[i] = entry(attributes, decision)
 
-#print(entries[0].price)
-isconsistant(entries)
+
+strng = ""
+for i in range(0,len(entries)):
+    strng += str(i) + ": " + entries[i].D + ",    "
+    
+print(strng)
+
+Dpart = partitionD(entries)
