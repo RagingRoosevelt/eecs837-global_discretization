@@ -1,8 +1,7 @@
 import random
-from time import sleep
 
+# class for storing (attribute, value) pairs and the (decision, concept) pair
 class entry():
-    # class for storing (attribute, value) pairs and the (decision, concept) pair
     def __init__(self, attributes, decision):
         self.A = {}
         for i in range(0,len(attributes)):
@@ -10,6 +9,7 @@ class entry():
         self.D = decision
 
 
+# function to get user input regardless of python version
 def get_user_input(message):
     try:
         # python 2.x function
@@ -19,7 +19,9 @@ def get_user_input(message):
         user_input = input(message)
     return user_input
 
-def readfile():
+
+# function to get filename from user and then open a file
+def openfile():
 
     # Get filename from user
     user_input = get_user_input("Filename? ")
@@ -34,15 +36,9 @@ def readfile():
             user_input = get_user_input("Filename? ")
             
     return file
-    
-def getAttributes(entry):
-    attributes = []
-    for k,v in (entry.__dict__).items():
-        attributes.append(k)
-    decision = [attributes[-1]]
-    del attributes[-1]
-    return attributes,decision
-    
+
+
+# function to partition a set based on concept
 def partitionD(entries):
     Dpart = [[0]]
     concepts = [entries[0].D]
@@ -62,18 +58,24 @@ def partitionD(entries):
         
     print(Dpart)
     return Dpart
-    
 
-#def partitionAttribute(entries)
-    
+
+# function to partition a set based on attribute 
+def partitionAttribute(entries,Attribute):
+    print("coming soon")
+
+
+# function to check consistency between attribute and decision   
 def isconsistant(entries):
-# http://stackoverflow.com/a/3295662
-    for entry in entries:
-      print(entries[entry].weight)
+    print("coming soon")
 
 
+###################
+# Begin execution #
+###################
+#file = openfile()
 
-#file = readfile()
+#Populate cases
 entries = {}
 for i in range(0,10):
     attributes = [random.randint(0, 10), random.randint(20,30), random.randint(40, 50)]
@@ -87,11 +89,12 @@ for i in range(0,10):
         decision = "high"
     entries[i] = entry(attributes, decision)
 
-
+# display decision for each case
 strng = ""
 for i in range(0,len(entries)):
     strng += str(i) + ": " + entries[i].D + ",    "
-    
 print(strng)
 
+
+# Partition based on decision
 Dpart = partitionD(entries)
