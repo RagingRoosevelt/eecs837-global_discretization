@@ -21,7 +21,9 @@ def parsefile(file):
     decision_value = ""
     for line in file:
         line = line.split()
-        if (line[0] == "<") or (line[0] == "!"):
+        if line == []:
+            continue
+        elif (line[0] == "<") or (line[0] == "!"):
             continue
         elif (line[0] == "["):
             attributes = line[1:-2]

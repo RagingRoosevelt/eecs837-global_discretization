@@ -2,8 +2,10 @@
 [ height weight noise price ]
 ! comment
 1 76 312  high
-2 38 123      high
+
+
+           2 38 123      high
 5 12 687   low
-2 51 172  low
+   2 51 172  low
 8 32 127         medium
 9 11 918 medium
