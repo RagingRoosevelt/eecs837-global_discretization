@@ -76,33 +76,18 @@ def isconsistant(entries):
 ###################
 # Begin execution #
 ###################
-file = openfile("sample.lers")
-entries = parsefile(file)
 
+# generate random LERS file
+if True == True:
+    randomLERS(30)
 
-#Populate cases
-if True == False:
-    entries = {}
-    for i in range(0,10):
-        attributes = [random.randint(0, 10), random.randint(20,30), random.randint(40, 50)]
-        
-        temp = random.randint(0, 2)
-        if temp == 0:
-            decision = "low"
-        elif temp == 1:
-            decision = "med"
-        else:
-            decision = "high"
-        entries[i] = entry(attributes, decision)
+# read and parse LERS file
+if True == True:    
+    file = openfile("sample1.lers")
+    entries = parsefile(file)
 
-    # display decision for each case
-    strng = ""
     for i in range(0,len(entries)):
-        strng += str(i) + ": " + entries[i].D + ",    "
-    print(strng)
+        print(str(i) + ": " + str(entries[i].A) + ", " + str(entries[i].D))
 
-for i in range(0,len(entries)):
-    print(str(i) + ": " + str(entries[i].A) + ", " + str(entries[i].D))
-
-# Partition based on decision
-Dpart = partitionD(entries)
+    # Partition based on decision
+    Dpart = partitionD(entries)
