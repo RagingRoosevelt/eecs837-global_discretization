@@ -64,7 +64,7 @@ def partitionD(entries):
             if not(i in Dpart[j]) and (entries[i].D == concepts[j]):
                 Dpart[j].append(i)
         
-    print(Dpart)https://kuit.service-now.com/
+    print(Dpart)
     return Dpart
 
 ##################################################
