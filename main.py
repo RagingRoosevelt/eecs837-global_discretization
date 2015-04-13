@@ -44,6 +44,52 @@ def parsefile(file):
     return entries
 
 
+############################################################
+# function to parse file and extract (a,v) and (d,v) pairs #
+############################################################
+def parsefile2(file):
+    got_attributes = 0
+    attributes = []
+    attribute_values = []
+    i = 0
+    decision = ""
+    decision_value = ""
+    entries = {}
+    for line in file:
+        line = line.split()
+        if line == []: # empty line
+            continue
+        elif (line[0] == "<") or (line[0] == "!"): # comment or first line
+            continue
+        elif line[0] == '[': # start of attribute list
+            if line[-1] == ']': # attribute list also ends on this line
+                attributes = line[1:-2]
+                decision = line[-2]
+                got_attributes = 2
+            else: # attribute list doesn't end on this line
+                got_attributes = 1
+                attributes = line[1:-1]
+        else:
+            if got_attributes == 1: # reading attributes still
+                if line[-1] == ']': # attribute list ends on this line
+                    attributes = line[0:-2]
+                    decision = line[-2]
+                    got_attributes = 2
+                else: # attribute list doesn't end on this line
+                    attributes = line[0:-1]
+            elif got_attributes == 2: # done reading attributes
+                attribute_values = [float(x) for x in line[0:-1]]
+                decision_value = line[-1]
+                #print(str(attribute_values) + " " + str(decision_value))
+                
+                entries[i] = entry(attribute_values, decision_value)
+                i += 1
+                    
+                    
+        
+    return entries
+
+
 ################################################
 # function to partition a set based on concept #
 ################################################
@@ -71,7 +117,24 @@ def partitionD(entries):
 # function to partition a set based on attribute #
 ##################################################
 def partitionAttribute(entries,Attribute):
-    print("coming soon")
+    Dpart = [[0]]
+    concepts = [entries[0].D]
+    
+    # Build partition identifiers
+    for i in range(0, len(entries)):
+        if not(entries[i].D in concepts):
+            Dpart.append([i])
+            concepts.append(entries[i].D)
+            print(entries[i].D + " (" + str(i) + ") not found")
+            
+    # Finish populating partition
+    for i in range(0, len(entries)):
+        for j in range(0, len(Dpart)):
+            if not(i in Dpart[j]) and (entries[i].D == concepts[j]):
+                Dpart[j].append(i)
+        
+    print(Dpart)
+    return Dpart
 
 ################################################################
 # function to check consistency between attribute and decision # 
@@ -90,8 +153,8 @@ def main():
 
     # read and parse LERS file
     if True == True:    
-        file = openfile("sample1.lers")
-        entries = parsefile(file)
+        file = openfile("jerzy5.txt")
+        entries = parsefile2(file)
 
         for i in range(0,len(entries)):
             print(str(i) + ": " + str(entries[i].A) + ", " + str(entries[i].D))
