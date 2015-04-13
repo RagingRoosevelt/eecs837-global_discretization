@@ -1,0 +1,23 @@
+( ) equal interval width
+ *  set k = 2 for all attributes
+ *  cutpoint is (min+max)/2
+ *  ===
+ *  check if the table is consistent
+ *  = if not consistant
+ *  determine worst attribute using average block entropy
+ *  increment k for the worst attribute
+ *  determine new cutpoints for worst attribute
+ *  go to ===
+ *  = if consistent
+ *  merge
+( ) equal frequency per interval
+( ) conditional entropy
+
+[x] partition decision
+[x] partition single attribute
+[x] partition several attributes
+[x] consistency check ({A,B,C,...}* <= {d}*)
+[ ] merge
+[ ] equal interval: establish_cutpoint(k,attribute)
+[ ] equal frequency: establish_cutpoint(k,attribute)
+[ ] condi entropy: establish_cutpoint(k,attribute)
