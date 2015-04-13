@@ -87,7 +87,7 @@ def parsefile2(file):
                     
                     
         
-    return entries
+    return (entries,attributes)
 
 
 ################################################
@@ -102,7 +102,7 @@ def partitionD(entries):
         if not(entries[i].D in concepts):
             Dpart.append([i])
             concepts.append(entries[i].D)
-            print(entries[i].D + " (" + str(i) + ") not found")
+            #print(entries[i].D + " (" + str(i) + ") not found")
             
     # Finish populating partition
     for i in range(0, len(entries)):
@@ -110,37 +110,69 @@ def partitionD(entries):
             if not(i in Dpart[j]) and (entries[i].D == concepts[j]):
                 Dpart[j].append(i)
         
-    print(Dpart)
+    #print(Dpart)
     return Dpart
 
 ##################################################
 # function to partition a set based on attribute #
 ##################################################
-def partitionAttribute(entries,Attribute):
-    Dpart = [[0]]
-    concepts = [entries[0].D]
+def partitionAttribute(entries,Att):
+    partition = [[0]]
+    concepts = [entries[0].A[Att]]
     
     # Build partition identifiers
     for i in range(0, len(entries)):
-        if not(entries[i].D in concepts):
-            Dpart.append([i])
-            concepts.append(entries[i].D)
-            print(entries[i].D + " (" + str(i) + ") not found")
+        if not(entries[i].A[Att] in concepts):
+            partition.append([i])
+            concepts.append(entries[i].A[Att])
+            #print(str(entries[i].A[Att]) + " (" + str(i) + ") not found")
             
     # Finish populating partition
     for i in range(0, len(entries)):
-        for j in range(0, len(Dpart)):
-            if not(i in Dpart[j]) and (entries[i].D == concepts[j]):
-                Dpart[j].append(i)
+        for j in range(0, len(partition)):
+            if not(i in partition[j]) and (entries[i].A[Att] == concepts[j]):
+                partition[j].append(i)
         
-    print(Dpart)
-    return Dpart
+    #print(partition)
+    return partition
 
+####################################################################
+# function to compute the partition of several attributes together #
+####################################################################
+def partitionAttributes(part1,part2):
+    part = []
+    for elmnt1 in part1:
+        for elmnt2 in part2:
+            temp = list(set(elmnt1) & set(elmnt2))
+            if not(temp == []):
+                part.append(temp)
+    return part
+    
 ################################################################
 # function to check consistency between attribute and decision # 
 ################################################################
-def isconsistant(entries):
-    print("coming soon")
+def isconsistant(entries,num_attributes):
+    partD = partitionD(entries)
+    multipart = partitionAttribute(entries,0)
+    for i in range(0,num_attributes):
+        part = partitionAttribute(entries,i)
+        multipart = partitionAttributes(part,multipart)
+        
+    print("Decision partition  : " + str(partD))
+    print("Attributes partition: " + str(multipart))
+    
+    consistant = True
+    for entryM in multipart:
+        subset=False
+        for entryD in partD:
+            #print(str(entryM) + "<=" + str(entryD) + "?")
+            if set(entryM) <= set(entryD):
+                subset = True
+                #print("Subset found")
+                break
+        if subset == False:
+            return False
+    return True
 
 
 ###################
@@ -148,17 +180,17 @@ def isconsistant(entries):
 ###################
 def main():
     # generate random LERS file
-    if True == True:
+    if True == False:
         randomLERS(30)
 
     # read and parse LERS file
     if True == True:    
-        file = openfile("jerzy5.txt")
-        entries = parsefile2(file)
-
+        file = openfile("jerzy1.txt")
+        (entries,attributes) = parsefile2(file)
+        
         for i in range(0,len(entries)):
             print(str(i) + ": " + str(entries[i].A) + ", " + str(entries[i].D))
 
-        # Partition based on decision
-        Dpart = partitionD(entries)
+        print(isconsistant(entries,len(attributes)))
+                
 main()
