@@ -16,3 +16,5 @@ and  [```utility.py```](https://github.com/RagingRoosevelt/eecs837_global-discre
 in the same directory.  You should put any lers-type files in the same directory
 as the two code files.  From there, simply run ```main.py``` and it should find
 all ```.txt``` and ```.lers``` files.
+
+### [Assignment](http://people.eecs.ku.edu/~jerzy/proj-837.pdf)
