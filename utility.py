@@ -57,6 +57,7 @@ def openfile(path=""):
 # diagnostic printing #
 #######################
 def diag(string):
+    diagnostics = 1
     if diagnostics != 0:
         print(string)
         

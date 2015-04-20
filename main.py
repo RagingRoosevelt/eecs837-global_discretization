@@ -3,7 +3,7 @@ from utility import *
 import os
 from math import log
 
-diagnostics = 1
+
 
  
 ###############################################################################
@@ -203,9 +203,9 @@ def entropy(entries, attributes,attr):
     return ent
 
 
-#####################
+#################################
 # calcualte conditional entropy #
-#####################
+#################################
 def conditionalEntropy(entries, attributes, attr):
     partD = partitionD(entries)
     partA = partitionAttribute(entries,attr)
@@ -232,13 +232,12 @@ def conditionalEntropy(entries, attributes, attr):
     return ent
 
 
-'''
-###################
-# Begin execution #
-###################
-def averageBlockEntropy(entries, attributes):
-    k = [2 for x in attributes]
-'''
+###################################
+# calcualte average block entropy #
+###################################
+def averageBlockEntropy(entries, attributes, attr):
+    return conditionalEntropy(entries, attributes, attr) / len(partitionAttribute(entries,attr))
+
 
 
 #############################
@@ -268,14 +267,14 @@ def main():
         (entries,attributes) = parsefile2(file)
         
         #print(entropy(entries,attributes,1))
-        
-        conditionalEntropy(entries, attributes, 1)
+        #print(conditionalEntropy(entries, attributes, 1))
+        print(averageBlockEntropy(entries, attributes, 1))
         
         '''
         for i in range(0,len(entries)):
             print(str(i) + ": " + str(entries[i].A) + ", " + str(entries[i].D))
         '''
 
-        isconsistant(entries,len(attributes))
+        #isconsistant(entries,len(attributes))
                 
 main()

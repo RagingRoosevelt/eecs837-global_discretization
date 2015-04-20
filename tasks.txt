@@ -17,6 +17,9 @@
 [x] partition single attribute
 [x] partition several attributes
 [x] consistency check ({A,B,C,...}* <= {d}*)
+[x] entropy (calculate)
+[x] conditional entropy (calculate)
+[x] average block entropy (calculate)
 [ ] merge
 [ ] equal interval: establish_cutpoint(k,attribute)
 [ ] equal frequency: establish_cutpoint(k,attribute)

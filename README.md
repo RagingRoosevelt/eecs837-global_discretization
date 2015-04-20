@@ -1,9 +1,8 @@
-# EECS 837
-## Final project
+# EECS 837 - Final project
 
 ### About
 
-This project scans for _.txt_ and _.lers_ files within the directory containing the python code and attempts to perform one of several discritizations on it:
+This project scans for ```.txt``` and ```.lers``` files within the directory containing the python code and attempts to perform one of several discritizations on it:
 
 * Global equal interval width
 * Global equal frequency per interval
