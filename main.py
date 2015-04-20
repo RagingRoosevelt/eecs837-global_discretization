@@ -226,8 +226,10 @@ def conditionalEntropy(entries, attributes, attr):
         diag(subPartD)
         
         for y in subPartD:
+            xl = float(len(x))
+            yl = float(subPartD[y])
             diag(str(len(x))+"/"+str(len(entries))+" x -"+str(subPartD[y])+"/"+str(len(x))+" x lg("+str(subPartD[y])+"/"+str(len(x))+")")
-            ent += len(x)/len(entries)*(-subPartD[y]/len(x))*log(subPartD[y] / len(x),2)
+            ent += xl/len(entries)*(-yl/xl)*log(yl/xl,2)
     diag(ent)
     return ent
 
@@ -239,12 +241,52 @@ def averageBlockEntropy(entries, attributes, attr):
     return conditionalEntropy(entries, attributes, attr) / len(partitionAttribute(entries,attr))
 
 
+#############################
+# cutpoints: equal interval #
+#############################
+def globalEqualFrequencyPerInterval(entries, attributes):
+    k = [2 for x in attributes]
+    count = len(entries)
+    parts = []
+    cutpoints = []
+    for i in range(0,len(attributes)):
+        parts.append(partitionAttribute(entries,i))
+        cutpoints.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])
+        diag("Attribute: " + attributes[i],1)
+        diag(parts[i],1)
+        diag(cutpoints[i],1)
+        
+    diag(cutpoints,1)
+
 
 #############################
 # cutpoints: equal interval #
 #############################
-def globalEqualInterval(entries, attributes):
+def globalEqualIntervalWidth(entries, attributes):
     k = [2 for x in attributes]
+    count = len(entries)
+    parts = []
+    values = []
+    cutpoints = []
+    for i in range(0,len(attributes)):
+        parts.append(partitionAttribute(entries,i))
+        values.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])
+        cutpoints.append([round(values[i][0] + j*(values[i][-1] - values[i][0])/(k[i]),7) for j in range(1,k[i])])
+        
+        # Diagnostics
+        d = 1
+        diag("\nAttribute: " + attributes[i],d)
+        diag("parts    : " + str(parts[i]),d)
+        diag("values   : " + str(values[i]),d)
+        diag("cutpoints: " + str(cutpoints[i]),d)
+        
+    diag("\n"+str(cutpoints),d)
+    diag(values,d)
+    
+    dis_entries = {}
+    for entry in entries:
+        for attr in entry.A:
+            if entry.A[attr]
     
     
 ###################
@@ -268,8 +310,8 @@ def main():
         
         #print(entropy(entries,attributes,1))
         #print(conditionalEntropy(entries, attributes, 1))
-        print(averageBlockEntropy(entries, attributes, 1))
-        
+        #print(averageBlockEntropy(entries, attributes, 1))
+        globalEqualIntervalWidth(entries, attributes)
         '''
         for i in range(0,len(entries)):
             print(str(i) + ": " + str(entries[i].A) + ", " + str(entries[i].D))
