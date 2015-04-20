@@ -53,3 +53,39 @@ def openfile(path=""):
     return file
 
 
+#######################
+# diagnostic printing #
+#######################
+def diag(string):
+    if diagnostics != 0:
+        print(string)
+        
+       
+
+
+#############################
+# file scanning / selection #
+#############################
+def selectFile():
+    files = []
+    i = 0
+    print("Please select from files found:")
+    for filename in os.listdir("./"):
+        if filename.endswith(".txt") or filename.endswith(".lers"):
+            files.append(filename)
+            print(str(i).rjust(3," ") + ". " + str(filename))
+            i+=1
+    
+    while True:
+        choice = get_user_input("> ")
+        
+        if choice.isdigit():
+            choice = int(choice)
+            if (choice > i-1) or (choice < 0):
+                print("\nerror: Selection out of bounds, please select a value between 0 and " + str(i-1))
+            else: 
+                return files[choice]
+        else:
+            print("\nerror: Invalid selection, please try again")
+
+

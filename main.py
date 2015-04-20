@@ -1,6 +1,11 @@
 import random
 from utility import *
+import os
+from math import log
 
+diagnostics = 1
+
+ 
 ###############################################################################
 # class for storing (attribute, value) pairs and the (decision, concept) pair #
 ###############################################################################
@@ -31,12 +36,12 @@ def parsefile(file):
         elif (line[0] == "["):
             attributes = line[1:-2]
             decision = line[-2]
-            #print("found the attribute names: " + str(attributes))
-            #print("found the decision name: " + str(decision))
+            diag("found the attribute names: " + str(attributes))
+            diag("found the decision name: " + str(decision))
         else:
             attribute_values = [float(x) for x in line[0:-1]]
             decision_value = line[-1]
-            #print(str(attribute_values) + " " + str(decision_value))
+            diag(str(attribute_values) + " " + str(decision_value))
             
             entries[i] = entry(attribute_values, decision_value)
             i += 1
@@ -158,23 +163,91 @@ def isconsistant(entries,num_attributes):
         part = partitionAttribute(entries,i)
         multipart = partitionAttributes(part,multipart)
         
-    print("Decision partition  : " + str(partD))
-    print("Attributes partition: " + str(multipart))
+    diag("Decision partition  : " + str(partD))
+    diag("Attributes partition: " + str(multipart))
     
     consistant = True
     for entryM in multipart:
         subset=False
         for entryD in partD:
-            #print(str(entryM) + "<=" + str(entryD) + "?")
+            diag(str(entryM) + "<=" + str(entryD) + "?")
             if set(entryM) <= set(entryD):
                 subset = True
-                #print("Subset found")
+                diag("Subset found")
                 break
         if subset == False:
             return False
     return True
 
 
+#####################
+# calcualte entropy #
+#####################
+def entropy(entries, attributes,attr):
+    if attr == -1:
+        partition = partitionD(entries)
+    else:
+        partition = partitionAttribute(entries,attr)
+    
+    sizes = [len(x) for x in partition]
+    
+    diag("partition: " + str(partition))
+    diag("size of  : " + str(sizes))
+    
+    ent = 0.0
+    
+    for x in sizes:
+        ent += -(x/len(entries))*log((x/len(entries)),2)
+        
+    diag(ent)
+    return ent
+
+
+#####################
+# calcualte conditional entropy #
+#####################
+def conditionalEntropy(entries, attributes, attr):
+    partD = partitionD(entries)
+    partA = partitionAttribute(entries,attr)
+    
+    diag("Decision partition : " + str(partD))
+    diag("Attribute partition: " + str(partA))
+    sizes = [len(x) for x in partA]
+    
+    ent = 0.0
+    for x in partA:
+        subPartD = {}
+        for y in x:
+            try:
+                subPartD[entries[y].D] += 1
+            except:
+                subPartD[entries[y].D] = 1
+                
+        diag(subPartD)
+        
+        for y in subPartD:
+            diag(str(len(x))+"/"+str(len(entries))+" x -"+str(subPartD[y])+"/"+str(len(x))+" x lg("+str(subPartD[y])+"/"+str(len(x))+")")
+            ent += len(x)/len(entries)*(-subPartD[y]/len(x))*log(subPartD[y] / len(x),2)
+    diag(ent)
+    return ent
+
+
+'''
+###################
+# Begin execution #
+###################
+def averageBlockEntropy(entries, attributes):
+    k = [2 for x in attributes]
+'''
+
+
+#############################
+# cutpoints: equal interval #
+#############################
+def globalEqualInterval(entries, attributes):
+    k = [2 for x in attributes]
+    
+    
 ###################
 # Begin execution #
 ###################
@@ -182,15 +255,27 @@ def main():
     # generate random LERS file
     if True == False:
         randomLERS(30)
+        
+    # file selection
+    if True == False:
+        filename = selectFile()
+        file = openfile(filename)
+    else:
+        file = openfile("jerzy1.txt")
 
     # read and parse LERS file
     if True == True:    
-        file = openfile("jerzy1.txt")
         (entries,attributes) = parsefile2(file)
         
+        #print(entropy(entries,attributes,1))
+        
+        conditionalEntropy(entries, attributes, 1)
+        
+        '''
         for i in range(0,len(entries)):
             print(str(i) + ": " + str(entries[i].A) + ", " + str(entries[i].D))
+        '''
 
-        print(isconsistant(entries,len(attributes)))
+        isconsistant(entries,len(attributes))
                 
 main()
