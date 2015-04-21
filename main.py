@@ -4,23 +4,6 @@ import os
 from math import log
 
 
-#######################
-# write Table to file #
-#######################
-def table2file(entries,attributes):
-    file = open("output.txt",'w')
-    
-    file.write("[ ")
-    for attr in attributes:
-        file.write(str(attr) + " ")
-    file.write("]\n")
-    
-    for entry in [entries[i] for i in entries]:
-        for val in [entry.A[i] for i in entry.A]:
-            file.write(" " + str(val))
-        file.write("\t" + str(entry.D) + "\n")
-
-
 ###############################################################################
 # class for storing (attribute, value) pairs and the (decision, concept) pair #
 ###############################################################################
@@ -61,7 +44,7 @@ def parsefile(file):
             entries[i] = entry(attribute_values, decision_value)
             i += 1
         
-    return entries
+    return (entries,attributes,decision)
 
 
 ############################################################
@@ -107,7 +90,7 @@ def parsefile2(file):
                     
                     
         
-    return (entries,attributes)
+    return (entries,attributes,decision)
 
 
 ################################################
@@ -285,8 +268,9 @@ def globalEqualIntervalWidth(entries, attributes):
     cutpoints = []
     for i in range(0,len(attributes)):
         parts.append(partitionAttribute(entries,i))
-        values.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])
-        
+        values.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])  # <---- bug?
+        values[i].sort()
+    
     for i in range(0,len(attributes)):
         cutpoints.append([round(values[i][0] + j*(values[i][-1] - values[i][0])/(k[i]),7) for j in range(1,k[i])])
         
@@ -314,8 +298,7 @@ def globalEqualIntervalWidth(entries, attributes):
             except:temp.append("x>" + str(cutpoints[attr][-1]))
         dis_entries[i] = entry(temp, entries[i].D)
     
-        
-    table2file(dis_entries,attributes)
+    return dis_entries
     
     
 ###################
@@ -335,12 +318,15 @@ def main():
 
     # read and parse LERS file
     if True == True:    
-        (entries,attributes) = parsefile2(file)
+        (entries,attributes,decision) = parsefile2(file)
         
         #print(entropy(entries,attributes,1))
         #print(conditionalEntropy(entries, attributes, 1))
         #print(averageBlockEntropy(entries, attributes, 1))
-        globalEqualIntervalWidth(entries, attributes)
+        
+        dis_entries = globalEqualIntervalWidth(entries, attributes)
+        diag("table written to " + str(table2file(dis_entries,attributes,decision)),1)
+        
         '''
         for i in range(0,len(entries)):
             print(str(i) + ": " + str(entries[i].A) + ", " + str(entries[i].D))

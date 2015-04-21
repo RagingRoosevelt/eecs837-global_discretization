@@ -1,5 +1,8 @@
 from random import randint
-# function to get user input regardless of python version
+
+###########################################################
+# function to get user input regardless of python version #
+###########################################################
 def randomLERS(count):
     file = open("sample1.lers", "w")
     file.write("< a a a a x x d d a a x >\n[ height weight noise price ]\n! comment\n")
@@ -21,6 +24,9 @@ def randomLERS(count):
     file.close()
 
 
+#####################################################
+# resolve version issues between python 2.x and 3.x #
+#####################################################
 def get_user_input(message):
     try:
         # python 2.x function
@@ -30,8 +36,9 @@ def get_user_input(message):
         user_input = input(message)
     return user_input
 
-
-# function to get filename from user (if none specified) and then open a file
+###############################################################################
+# function to get filename from user (if none specified) and then open a file #
+###############################################################################
 def openfile(path=""):
     if path == "":
         # Get filename from user
@@ -51,6 +58,30 @@ def openfile(path=""):
             user_input = get_user_input("Filename? ")
             
     return file
+
+
+#######################
+# write Table to file #
+#######################
+def table2file(entries,attributes,decision,filename="output.txt"):
+    file = open(filename,'w')
+    
+    # Write attribute identifiers
+    file.write("[ ")
+    for attr in attributes:
+        file.write(str(attr) + " ")
+    file.write(str(decision)+" ]")
+    
+    # Write each entry
+    for entry in [entries[i] for i in entries]:
+        file.write("\n")
+        for val in [entry.A[i] for i in entry.A]:
+            file.write(" " + str(val))
+        file.write("\t" + str(entry.D))
+        
+    file.close()
+    
+    return filename
 
 
 #######################
