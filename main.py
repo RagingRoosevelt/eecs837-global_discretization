@@ -4,8 +4,23 @@ import os
 from math import log
 
 
+#######################
+# write Table to file #
+#######################
+def table2file(entries,attributes):
+    file = open("output.txt",'w')
+    
+    file.write("[ ")
+    for attr in attributes:
+        file.write(str(attr) + " ")
+    file.write("]\n")
+    
+    for entry in [entries[i] for i in entries]:
+        for val in [entry.A[i] for i in entry.A]:
+            file.write(" " + str(val))
+        file.write("\t" + str(entry.D) + "\n")
 
- 
+
 ###############################################################################
 # class for storing (attribute, value) pairs and the (decision, concept) pair #
 ###############################################################################
@@ -241,9 +256,9 @@ def averageBlockEntropy(entries, attributes, attr):
     return conditionalEntropy(entries, attributes, attr) / len(partitionAttribute(entries,attr))
 
 
-#############################
-# cutpoints: equal interval #
-#############################
+'''###########################################
+# cutpoints: equal frequency per interval #
+###########################################
 def globalEqualFrequencyPerInterval(entries, attributes):
     k = [2 for x in attributes]
     count = len(entries)
@@ -256,12 +271,12 @@ def globalEqualFrequencyPerInterval(entries, attributes):
         diag(parts[i],1)
         diag(cutpoints[i],1)
         
-    diag(cutpoints,1)
+    diag(cutpoints,1)'''
 
 
-#############################
-# cutpoints: equal interval #
-#############################
+###################################
+# cutpoints: equal interval width #
+###################################
 def globalEqualIntervalWidth(entries, attributes):
     k = [2 for x in attributes]
     count = len(entries)
@@ -271,22 +286,36 @@ def globalEqualIntervalWidth(entries, attributes):
     for i in range(0,len(attributes)):
         parts.append(partitionAttribute(entries,i))
         values.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])
+        
+    for i in range(0,len(attributes)):
         cutpoints.append([round(values[i][0] + j*(values[i][-1] - values[i][0])/(k[i]),7) for j in range(1,k[i])])
         
         # Diagnostics
         d = 1
         diag("\nAttribute: " + attributes[i],d)
-        diag("parts    : " + str(parts[i]),d)
+        diag("partition: " + str(parts[i]),d)
         diag("values   : " + str(values[i]),d)
         diag("cutpoints: " + str(cutpoints[i]),d)
         
-    diag("\n"+str(cutpoints),d)
-    diag(values,d)
+    # Diagnostics
+    d = 1
+    diag("\nattr values: " + str(values),d)
+    diag("cutpoints  : "+str(cutpoints)+"\n",d)
     
     dis_entries = {}
-    for entry in entries:
-        for attr in entry.A:
-            if entry.A[attr]
+    for i in range(0,len(entries)):
+        temp = []
+        for attr in entries[i].A:
+            for val in cutpoints[attr]:
+                if entries[i].A[attr] < val:
+                    temp.append("x<" + str(val))
+                    break
+            try:temp[attr]
+            except:temp.append("x>" + str(cutpoints[attr][-1]))
+        dis_entries[i] = entry(temp, entries[i].D)
+    
+        
+    table2file(dis_entries,attributes)
     
     
 ###################
