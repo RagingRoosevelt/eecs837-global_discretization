@@ -63,25 +63,38 @@ def openfile(path=""):
 #######################
 # write Table to file #
 #######################
-def table2file(entries,attributes,decision,filename="output.txt"):
-    file = open(filename,'w')
+def table2file(entries,attributes,cutpoints,decision,datafilename="output.data.txt",intfilename="output.int.txt"):
+    print("Writing table and cutput info to file")
+    datafile = open(datafilename,'w')
     
     # Write attribute identifiers
-    file.write("[ ")
+    datafile.write("[ ")
     for attr in attributes:
-        file.write(str(attr) + " ")
-    file.write(str(decision)+" ]")
+        datafile.write(str(attr) + " ")
+    datafile.write(str(decision)+" ]")
     
     # Write each entry
     for entry in [entries[i] for i in entries]:
-        file.write("\n")
+        datafile.write("\n")
         for val in [entry.A[i] for i in entry.A]:
-            file.write(" " + str(val))
-        file.write("\t" + str(entry.D))
+            datafile.write(" " + str(val))
+        datafile.write("\t" + str(entry.D))
         
-    file.close()
+    datafile.close()
     
-    return filename
+    
+    intfile = open(intfilename,'w')
+    
+    for i in range(0,len(attributes)):
+        intfile.write("cutpoints for " + str(attributes[i]) + ":\n")
+        for point in cutpoints[i][0:-1]:
+            intfile.write(str(point) + ", ")
+        intfile.write(str(cutpoints[i][-1]) + "\n")
+    
+    
+    intfile.close()
+    
+    return (datafilename,intfilename)
 
 
 #######################

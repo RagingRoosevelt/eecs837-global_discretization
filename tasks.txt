@@ -1,18 +1,3 @@
-( ) equal interval width
- *  set k = 2 for all attributes
- *  cutpoint is (min+max)/2
- *  ===
- *  check if the table is consistent
- *  = if not consistant
- *  determine worst attribute using average block entropy
- *  increment k for the worst attribute
- *  determine new cutpoints for worst attribute
- *  go to ===
- *  = if consistent
- *  merge
-( ) equal frequency per interval
-( ) conditional entropy
-
 [x] partition decision
 [x] partition single attribute
 [x] partition several attributes
@@ -21,6 +6,44 @@
 [x] conditional entropy (calculate)
 [x] average block entropy (calculate)
 [ ] merge
-[ ] equal interval: establish_cutpoint(k,attribute)
-[ ] equal frequency: establish_cutpoint(k,attribute)
-[ ] condi entropy: establish_cutpoint(k,attribute)
+[x] equal width: establish_cutpoints(k,attribute)
+[x] equal width: build new table
+[ ] equal frequency: establish_cutpoints(k,attribute)
+[ ] equal frequency: build new table
+[ ] condi entropy: establish_cutpoints(k,attribute)
+[ ] condi entropy: build new table
+
+
+equal width procedure:
+1) start with k=2 for all attributes
+2) find k-1 cutpoints for each attribute
+    divide the interval between the max and min value for the attribute into equal regions
+3) assemble new table according to new cutpoints
+4) check if table is consistant; if yes: go to (8) else continue
+5) calculate the average block entropy for each attribute
+6) increase k by 1 for the attribute with the highest average block entropy
+7) go to 2
+8) merge cutpoints
+
+equal frequency procedure:
+1) start with k=2 for all attributes
+2) find k-1 cutpoints for each attribute
+    choose cutpoints so that each interval has roughly the same number of enteries
+3) assemble new table according to new cutpoints
+4) check if table is consistant; if yes: go to (8) else continue
+5) calculate the average block entropy for each attribute
+6) increase k by 1 for the attribute with the highest average block entropy
+7) go to 2
+8) merge cutpoints
+
+
+condi entropy procedure:
+1) start with k=2 for all attributes
+2) find k-1 cutpoints for each attribute
+    
+3) assemble new table according to new cutpoints
+4) check if table is consistant; if yes: go to (8) else continue
+5) calculate the average block entropy for each attribute
+6) increase k by 1 for the attribute with the highest average block entropy
+7) go to 2
+8) merge cutpoints

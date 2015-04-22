@@ -3,6 +3,8 @@ from utility import *
 import os
 from math import log
 
+status = 0
+
 
 ###############################################################################
 # class for storing (attribute, value) pairs and the (decision, concept) pair #
@@ -19,6 +21,11 @@ class entry():
 # function to parse file and extract (a,v) and (d,v) pairs #
 ############################################################
 def parsefile(file):
+    if status==1: print("Parsing the lers input file")
+    # Diagnostics on (1) or off (0)?
+    d = 0
+    
+    
     entries = {}
     i = 0
     attributes = []
@@ -34,8 +41,8 @@ def parsefile(file):
         elif (line[0] == "["):
             attributes = line[1:-2]
             decision = line[-2]
-            diag("found the attribute names: " + str(attributes))
-            diag("found the decision name: " + str(decision))
+            diag("found the attribute names: " + str(attributes),d)
+            diag("found the decision name: " + str(decision),d)
         else:
             attribute_values = [float(x) for x in line[0:-1]]
             decision_value = line[-1]
@@ -51,6 +58,7 @@ def parsefile(file):
 # function to parse file and extract (a,v) and (d,v) pairs #
 ############################################################
 def parsefile2(file):
+    if status==1: print("Parsing the lers input file")
     got_attributes = 0
     attributes = []
     attribute_values = []
@@ -97,6 +105,7 @@ def parsefile2(file):
 # function to partition a set based on concept #
 ################################################
 def partitionD(entries):
+    if status==1: print("Partitioning the decision")
     Dpart = [[0]]
     concepts = [entries[0].D]
     
@@ -120,6 +129,7 @@ def partitionD(entries):
 # function to partition a set based on attribute #
 ##################################################
 def partitionAttribute(entries,Att):
+    if status==1: print("Partitioning a single attribute")
     partition = [[0]]
     concepts = [entries[0].A[Att]]
     
@@ -143,6 +153,7 @@ def partitionAttribute(entries,Att):
 # function to compute the partition of several attributes together #
 ####################################################################
 def partitionAttributes(part1,part2):
+    if status==1: print("Partitioning multiple attributes")
     part = []
     for elmnt1 in part1:
         for elmnt2 in part2:
@@ -155,23 +166,28 @@ def partitionAttributes(part1,part2):
 # function to check consistency between attribute and decision # 
 ################################################################
 def isconsistant(entries,num_attributes):
+    if status==1: print("Checking for consistancy")
+    # Diagnostics on (1) or off (0)?
+    d = 0
+    
+    
     partD = partitionD(entries)
     multipart = partitionAttribute(entries,0)
     for i in range(0,num_attributes):
         part = partitionAttribute(entries,i)
         multipart = partitionAttributes(part,multipart)
         
-    diag("Decision partition  : " + str(partD))
-    diag("Attributes partition: " + str(multipart))
+    diag("Decision partition  : " + str(partD),d)
+    diag("Attributes partition: " + str(multipart),d)
     
     consistant = True
     for entryM in multipart:
         subset=False
         for entryD in partD:
-            diag(str(entryM) + "<=" + str(entryD) + "?")
+            diag(str(entryM) + "<=" + str(entryD) + "?",d)
             if set(entryM) <= set(entryD):
                 subset = True
-                diag("Subset found")
+                diag("Subset found",d)
                 break
         if subset == False:
             return False
@@ -182,6 +198,11 @@ def isconsistant(entries,num_attributes):
 # calcualte entropy #
 #####################
 def entropy(entries, attributes,attr):
+    if status==1: print("Computing entropy")
+    # Diagnostics on (1) or off (0)?
+    d = 0
+    
+    
     if attr == -1:
         partition = partitionD(entries)
     else:
@@ -189,8 +210,8 @@ def entropy(entries, attributes,attr):
     
     sizes = [len(x) for x in partition]
     
-    diag("partition: " + str(partition))
-    diag("size of  : " + str(sizes))
+    diag("partition: " + str(partition),d)
+    diag("size of  : " + str(sizes),d)
     
     ent = 0.0
     
@@ -205,11 +226,15 @@ def entropy(entries, attributes,attr):
 # calcualte conditional entropy #
 #################################
 def conditionalEntropy(entries, attributes, attr):
+    if status==1: print("Computing conditional entropy")
+    # Diagnostics on (1) or off (0)?
+    d = 0
+    
     partD = partitionD(entries)
     partA = partitionAttribute(entries,attr)
     
-    diag("Decision partition : " + str(partD))
-    diag("Attribute partition: " + str(partA))
+    diag("Decision partition : " + str(partD),d)
+    diag("Attribute partition: " + str(partA),d)
     sizes = [len(x) for x in partA]
     
     ent = 0.0
@@ -236,69 +261,135 @@ def conditionalEntropy(entries, attributes, attr):
 # calcualte average block entropy #
 ###################################
 def averageBlockEntropy(entries, attributes, attr):
+    if status==1: print("Computing average block entropy")
     return conditionalEntropy(entries, attributes, attr) / len(partitionAttribute(entries,attr))
 
 
-'''###########################################
+###########################################
 # cutpoints: equal frequency per interval #
 ###########################################
 def globalEqualFrequencyPerInterval(entries, attributes):
     k = [2 for x in attributes]
     count = len(entries)
-    parts = []
-    cutpoints = []
-    for i in range(0,len(attributes)):
-        parts.append(partitionAttribute(entries,i))
-        cutpoints.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])
-        diag("Attribute: " + attributes[i],1)
-        diag(parts[i],1)
-        diag(cutpoints[i],1)
-        
-    diag(cutpoints,1)'''
+    
 
 
 ###################################
 # cutpoints: equal interval width #
 ###################################
-def globalEqualIntervalWidth(entries, attributes):
-    k = [2 for x in attributes]
-    count = len(entries)
+def cutpointsEqualFrequencyPerInterval(entries,attributes,k):
+    if status==1: print("Finding cutpoints using the global equal interval width method")
+    # Diagnostics on (1) or off (0)?
+    d = 0
+    
+    
+    cutpoints = [] 
     parts = []
     values = []
-    cutpoints = []
+    
+    return (parts,values,cutpoints,dis_entries)
+    
+    
+###################################
+# cutpoints: equal interval width #
+###################################
+def cutpointsEqualIntervalWidth(entries,attributes,k):
+    if status==1: print("Finding cutpoints using the global equal interval width method")
+    # Diagnostics on (1) or off (0)?
+    d = 0
+    
+    
+    cutpoints = [] 
+    parts = []
+    values = []
+    
     for i in range(0,len(attributes)):
         parts.append(partitionAttribute(entries,i))
-        values.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])  # <---- bug?
+        values.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])
         values[i].sort()
     
     for i in range(0,len(attributes)):
         cutpoints.append([round(values[i][0] + j*(values[i][-1] - values[i][0])/(k[i]),7) for j in range(1,k[i])])
         
         # Diagnostics
-        d = 1
         diag("\nAttribute: " + attributes[i],d)
         diag("partition: " + str(parts[i]),d)
         diag("values   : " + str(values[i]),d)
         diag("cutpoints: " + str(cutpoints[i]),d)
-        
-    # Diagnostics
-    d = 1
-    diag("\nattr values: " + str(values),d)
-    diag("cutpoints  : "+str(cutpoints)+"\n",d)
     
     dis_entries = {}
     for i in range(0,len(entries)):
         temp = []
         for attr in entries[i].A:
-            for val in cutpoints[attr]:
-                if entries[i].A[attr] < val:
-                    temp.append("x<" + str(val))
+            for j in range(0,len(cutpoints[attr])):
+                if entries[i].A[attr] < cutpoints[attr][j]:
+                    if j==0:
+                        temp.append(str(values[attr][0]) + ".." + str(cutpoints[attr][j]))
+                    else: 
+                        temp.append(str(cutpoints[attr][j-1]) + ".." + str(cutpoints[attr][j]))
+                        
                     break
+            
             try:temp[attr]
-            except:temp.append("x>" + str(cutpoints[attr][-1]))
+            except:temp.append(str(cutpoints[attr][-1]) + ".." + str(values[attr][-1]))
+            
         dis_entries[i] = entry(temp, entries[i].D)
+        
+    return (parts,values,cutpoints,dis_entries)
+
+
+########################
+# equal interval width #
+########################
+def globalEqualIntervalWidth(entries, attributes):
+    if status==1: print("Calculating discritiztion via the global equal interval width method")
+    # Diagnostics on (1) or off (0)?
+    d = 0
     
-    return dis_entries
+    k = [2 for x in attributes]
+    count = len(entries)
+    
+    while True:
+    
+        (parts,values,cutpoints,dis_entries) = cutpointsEqualIntervalWidth(entries,attributes,k)
+            
+        # Diagnostics
+        diag("\nattr values: " + str(values),d)
+        diag("cutpoints  : "+str(cutpoints)+"\n",d)
+        
+        if isconsistant(dis_entries,len(attributes)):
+            diag("Cutpoints found, table is consistant.\n",d)
+            break
+        else:
+            ent = []
+            toincrement = 0
+            
+            for attr in range(0,len(attributes)):
+                ent.append(averageBlockEntropy(dis_entries, attributes, attr))
+            
+            diag("The average block entropies are:\n" + str(ent),1)
+                
+            for attr in range(0,len(attributes)):
+                if (ent[attr] > ent[toincrement]) and (k[attr] < len(values[attr])):
+                    diag("k: " + str(k[attr]) + " and number of values: " + str(len(values[attr])),d)
+                    toincrement = attr
+                else:
+                    ent[attr] = 0
+            
+            k[toincrement] += 1
+            
+            diag("Not done. Here are the new k values:\n" + str(k),1)
+            
+            diag("The number of values per attribute are:\n" + str([len(x) for x in values]) + "\n",1)
+            
+    
+    return (dis_entries,cutpoints)
+
+
+###################
+# merge cutpoints #
+###################
+#def merge(entries, attributes):
     
     
 ###################
@@ -314,18 +405,22 @@ def main():
         filename = selectFile()
         file = openfile(filename)
     else:
-        file = openfile("jerzy1.txt")
+        file = openfile("jerzy3.txt")
 
     # read and parse LERS file
     if True == True:    
         (entries,attributes,decision) = parsefile2(file)
+        if not(isconsistant(entries,len(attributes))):
+            print("Sorry, the provided table is not consistant")
+            quit()
         
         #print(entropy(entries,attributes,1))
         #print(conditionalEntropy(entries, attributes, 1))
         #print(averageBlockEntropy(entries, attributes, 1))
         
-        dis_entries = globalEqualIntervalWidth(entries, attributes)
-        diag("table written to " + str(table2file(dis_entries,attributes,decision)),1)
+        (dis_entries,cutpoints) = globalEqualIntervalWidth(entries, attributes)
+        (datafilename,numbfilename) = table2file(dis_entries,attributes,cutpoints,decision)
+        diag("table written to " + str(datafilename) + "\ncutpoint info written to " + numbfilename,1)
         
         '''
         for i in range(0,len(entries)):
