@@ -1,4 +1,5 @@
 from random import randint
+import os
 
 ###########################################################
 # function to get user input regardless of python version #
@@ -39,23 +40,22 @@ def get_user_input(message):
 ###############################################################################
 # function to get filename from user (if none specified) and then open a file #
 ###############################################################################
-def openfile(path=""):
-    if path == "":
+def openfile(user_input=None):
+    
+    if user_input == None:
         # Get filename from user
-        user_input = get_user_input("Filename? ")
-    else:
-        user_input = path
+        user_input = input("Filename?\n> ")
 
     
     while True:
         try:
-            # try to open file
-            file = open(user_input, "r")
+            # try to open file 
+            file = open(user_input, "rU")           
             break
         except:
             # if file doesn't open, re-prompt for filename and try to open again
-            print("\nerror: File not found")
-            user_input = get_user_input("Filename? ")
+            print("\nerror: File not found\n")
+            user_input = get_user_input("Filename?\n> ")
             
     return file
 
@@ -64,7 +64,9 @@ def openfile(path=""):
 # write Table to file #
 #######################
 def table2file(entries,attributes,cutpoints,decision,datafilename="output.data.txt",intfilename="output.int.txt"):
-    print("Writing table and cutput info to file")
+    d = 1
+    
+    diag("\nWriting table and cutput info to disk",d)
     datafile = open(datafilename,'w')
     
     # Write attribute identifiers
@@ -111,25 +113,33 @@ def diag(string,diagnostics=0):
 # file scanning / selection #
 #############################
 def selectFile():
-    files = []
-    i = 0
-    print("Please select from files found:")
-    for filename in os.listdir("./"):
-        if filename.endswith(".txt") or filename.endswith(".lers"):
-            files.append(filename)
-            print(str(i).rjust(3," ") + ". " + str(filename))
-            i+=1
+    choice = get_user_input("\n\nWould you like to: \n0. Select from a list of files\n1. Enter a filename manually?\n> ")
     
-    while True:
-        choice = get_user_input("> ")
+    if choice == "0":
+        files = [""]
+        i = 1
+        print("\nPlease select from files found:")
+        for filename in os.listdir("./"):
+            if filename.endswith(".txt") or filename.endswith(".lers"):
+                files.append(filename)
+                print(str(i).rjust(3," ") + ". " + str(filename))
+                i+=1
         
-        if choice.isdigit():
-            choice = int(choice)
-            if (choice > i-1) or (choice < 0):
-                print("\nerror: Selection out of bounds, please select a value between 0 and " + str(i-1))
-            else: 
-                return files[choice]
-        else:
-            print("\nerror: Invalid selection, please try again")
+        while True:
+            choice = get_user_input("> ")
+            
+            if choice.isdigit():
+                choice = int(choice)
+                if (choice > i-1) or (choice < 1):
+                    print("\nerror: Selection out of bounds, please select a value between 1 and " + str(i-1))
+                else: 
+                    return files[choice]
+            else:
+                print("\nerror: Invalid selection, please try again")
+    elif choice == "1":
+        return openfile()
+    else:
+        print("\nerror: Invalid selection, defaulting to manual entry\n")
+        return openfile()
 
 
