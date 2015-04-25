@@ -8,10 +8,10 @@
 [ ] merge
 [x] equal width: establish_cutpoints(k,attribute)
 [x] equal width: build new table
-[ ] equal frequency: establish_cutpoints(k,attribute)
-[ ] equal frequency: build new table
-[ ] condi entropy: establish_cutpoints(k,attribute)
-[ ] condi entropy: build new table
+[x] equal frequency: establish_cutpoints(k,attribute)
+[x] equal frequency: build new table
+[x] condi entropy: establish_cutpoints(k,attribute)
+[x] condi entropy: build new table
 
 
 equal width procedure:
@@ -37,13 +37,4 @@ equal frequency procedure:
 8) merge cutpoints
 
 
-condi entropy procedure:
-1) start with k=2 for all attributes
-2) find k-1 cutpoints for each attribute
-    
-3) assemble new table according to new cutpoints
-4) check if table is consistant; if yes: go to (8) else continue
-5) calculate the average block entropy for each attribute
-6) increase k by 1 for the attribute with the highest average block entropy
-7) go to 2
-8) merge cutpoints
+condi entropy procedure

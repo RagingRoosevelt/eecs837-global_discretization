@@ -113,9 +113,9 @@ def diag(string,diagnostics=0):
 # file scanning / selection #
 #############################
 def selectFile():
-    choice = get_user_input("\n\nWould you like to: \n0. Select from a list of files\n1. Enter a filename manually?\n> ")
+    choice = get_user_input("\n\nWould you like to: \n1: Select from a list of files\n2: Enter a filename manually?\n> ")
     
-    if choice == "0":
+    if choice == "1":
         files = [""]
         i = 1
         print("\nPlease select from files found:")
@@ -136,7 +136,7 @@ def selectFile():
                     return files[choice]
             else:
                 print("\nerror: Invalid selection, please try again")
-    elif choice == "1":
+    elif choice == "2":
         return openfile()
     else:
         print("\nerror: Invalid selection, defaulting to manual entry\n")

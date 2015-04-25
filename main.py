@@ -164,7 +164,8 @@ def partitionAttributes(part1,part2):
             if not(temp == []):
                 part.append(temp)
     return part
-    
+
+
 ################################################################
 # function to check consistency between attribute and decision # 
 ################################################################
@@ -173,13 +174,12 @@ def isconsistant(entries,num_attributes):
     # Diagnostics on (1) or off (0)?
     d = 0
     
-    
     partD = partitionD(entries)
     multipart = partitionAttribute(entries,0)
     for i in range(0,num_attributes):
         part = partitionAttribute(entries,i)
         multipart = partitionAttributes(part,multipart)
-        
+    
     diag("Decision partition  : " + str(partD),d)
     diag("Attributes partition: " + str(multipart),d)
     
@@ -190,7 +190,8 @@ def isconsistant(entries,num_attributes):
             diag(str(entryM) + "<=" + str(entryD) + "?",d)
             if set(entryM) <= set(entryD):
                 subset = True
-                diag("Subset found",d)
+                
+                diag("\nSubset found",d)
                 break
         if subset == False:
             return False
@@ -267,47 +268,72 @@ def averageBlockEntropy(entries, attributes, attr):
     if status==1: print("Computing average block entropy")
     return conditionalEntropy(entries, attributes, attr) / len(partitionAttribute(entries,attr))
 
+    
+################################################################
+# Functioon to parse for the attribute values from the entries # 
+################################################################
+def findAttributeValues(entries,num_attributes):
+    attr_values = [[] for attr in range(0,num_attributes)]
+    
+    # Setting up dependancy info
+    for ent in entries:
+        for attr in range(0,num_attributes):
+            if not(entries[ent].A[attr] in attr_values[attr]):
+                attr_values[attr].append(entries[ent].A[attr])
+                
+    for attr in range(0,num_attributes):
+        attr_values[attr].sort()
+                
+    return attr_values
+    
+
 
 ################################
 # equal frequency per interval #
 ################################
-def globalConditionalEntropy(entries, attributes):
+def globalConditionalEntropy(entries, attributes,decision):
     # Diagnostics on (1) or off (0)?
     d = 0
     
     k = [2 for attr in attributes]
     old_k = [0 for attr in attributes]
     cutpoints = [[] for attr in attributes]
-    attr_values = [[] for attr in attributes]
+    #attr_values = [[] for attr in attributes]
     possible_cutpoints = [[] for attr in attributes]
     cutpoints = [[] for attr in attributes]
     temp_cutpoints = [[] for attr in attributes]
     
-    # Setting up dependancy info
+    attr_values = findAttributeValues(entries,len(attributes))
+    
+    '''# Setting up dependancy info
     for ent in entries:
         for attr in range(0,len(attributes)):
             if not(entries[ent].A[attr] in attr_values[attr]):
-                attr_values[attr].append(entries[ent].A[attr])
+                attr_values[attr].append(entries[ent].A[attr])'''
     
+    # Diagnostics: print attribute values
     for attr in range(0,len(attributes)):         
         diag("Attribute #" + str(attr) + "'s values" + str(attr_values[attr]),d)
     
+    # Calculate possible cutpoints
     for attr in range(0,len(attributes)):
+        attr_values[attr].sort()
         for val in range(0,len(attr_values[attr])-1):
             possible_cutpoints[attr].append(round((attr_values[attr][val] + attr_values[attr][val+1])/2.0,7))
     
+    # Diagnostics: print possible cutpoints
     diag("",d)
     for attr in range(0,len(attributes)):         
         diag("Attribute #" + str(attr) + "'s possible cutpoints" + str(possible_cutpoints[attr]),d)
     
     
-    # Find cutpoints
+    # Find cutpoints from possible cutpoints
     while True:
         entropies = [[] for attr in attributes]
         for attr in range(0,len(attributes)):
             # no need to process the same attribute if it's already been done
             diag("" + str(k[attr]) + " vs " + str(old_k[attr]),d)
-            if k[attr] > old_k[attr]:
+            if (k[attr] > old_k[attr]):
                 diag("\nFor attribute #" + str(attr) + ",",d)
                 # for each possible cutpoint for the given attribute:
                 for val in range(0,len(possible_cutpoints[attr])):
@@ -323,10 +349,12 @@ def globalConditionalEntropy(entries, attributes):
                 for val in range(0,len(entropies[attr])):
                     if entropies[attr][val] < entropies[attr][lowest_ent] and not(possible_cutpoints[attr][val] in cutpoints[attr]):
                         lowest_ent = val
+                
+                
                 cutpoints[attr].append(possible_cutpoints[attr][lowest_ent])
-                diag("Adding the cutpoint " + str(possible_cutpoints[attr][lowest_ent]) + " to get " + str(cutpoints) + "\n",d)
-                #print("Adding the cutpoint " + str(possible_cutpoints[attr][lowest_ent]) + " to " + str(cutpoints[attr]) + " to get " + str(cutpoints))
+                diag("Adding the cutpoint " + str(possible_cutpoints[attr][lowest_ent]) + " to get " + str(cutpoints) + "",d)
                 possible_cutpoints[attr].remove(possible_cutpoints[attr][lowest_ent])
+                diag("The following remain as possible cutpoints: " + str(possible_cutpoints[attr]) + "\n",d)
                 #possible_cutpoints[attr] = [val for val in possible_cutpoints[attr] if val != cutpoints[attr][-1]]
                 
         
@@ -342,15 +370,22 @@ def globalConditionalEntropy(entries, attributes):
         else:
             diag("Discretized table is not consistant",d)
             #  (old location, old entropy), (new location, new entropy)
-            worst_attribute = [(0,averageBlockEntropy(temp_entries, attributes, 0)),()]
-            for attr in range(1,len(attributes)):
+            worst_attribute = [(-1,0),()]
+            for attr in range(0,len(attributes)):
                 worst_attribute[1] = (attr,averageBlockEntropy(temp_entries, attributes, attr))
-                if (worst_attribute[1][1] > worst_attribute[0][1]) and len(attr_values[attr]) > k[attr]:
+                diag("Comparing entorpy (new) " + str(worst_attribute[1][1]) + " to (old) " + str(worst_attribute[0][1]) + ". This attribute has " + str(len(possible_cutpoints[attr])) + " possible cutpoints remaining.",d)
+                if (worst_attribute[1][1] > worst_attribute[0][1]) and len(possible_cutpoints[attr]) > 0:
                     worst_attribute[0] = worst_attribute[1]
             
             old_k = [val for val in k]
-            k[worst_attribute[0][0]] += 1
-            diag("Incremented k for attribute #" + str(worst_attribute[0][0]) + ": " + str(k) + "\n",d)
+            if worst_attribute[0][0] > -1:
+                k[worst_attribute[0][0]] += 1
+                diag("Incremented k for attribute #" + str(worst_attribute[0][0]) + ": " + str(k) + "",d)
+                diag("There are a total of " + str([len(vals) for vals in attr_values]) + " values per attribute\n",d)
+            else:
+                print("error: The computed table is not consistant and there are no more cutpoints left to introduce")
+                table2file(temp_entries,attributes,cutpoints,decision)
+                quit()
     
     
     return (dis_entries,cutpoints)
@@ -368,12 +403,11 @@ def globalEqualFrequencyPerInterval(entries, attributes):
     k = [2 for x in attributes]
     count = len(entries)
     
-    #while True:
-    #(parts,values,cutpoints,dis_entries) = cutpointsEqualFrequencyPerInterval(entries,attributes,k)
+    attr_values = findAttributeValues(entries,len(attributes))
     
     while True:
     
-        (parts,values,cutpoints,dis_entries) = cutpointsEqualFrequencyPerInterval(entries,attributes,k)
+        (parts,values,cutpoints,dis_entries) = cutpointsEqualFrequencyPerInterval(entries,attributes,attr_values,k)
             
         # Diagnostics
         diag("\nattr values: " + str(values),d)
@@ -411,20 +445,19 @@ def globalEqualFrequencyPerInterval(entries, attributes):
 ###########################################
 # cutpoints: equal frequency per interval #
 ###########################################
-def cutpointsEqualFrequencyPerInterval(entries,attributes,k):
+def cutpointsEqualFrequencyPerInterval(entries,attributes,attr_values,k):
     if status==1: print("Finding cutpoints using the global equal interval width method")
     # Diagnostics on (1) or off (0)?
     d = 0
     
     cutpoints = [[] for x in attributes]
     parts = []
-    attr_values = []
     total_entries = len(entries)
     
+    
+    # Calculate the partitions of each attribute
     for i in range(0,len(attributes)):
         parts.append(partitionAttribute(entries,i))
-        attr_values.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])
-        attr_values[i].sort()
     
     
     
@@ -520,12 +553,13 @@ def cutpointsEqualIntervalWidth(entries,attributes,k):
     
     cutpoints = [] 
     parts = []
-    attr_values = []
+    #attr_values = []
     
     for i in range(0,len(attributes)):
         parts.append(partitionAttribute(entries,i))
-        attr_values.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])
-        attr_values[i].sort()
+        #attr_values.append([entries[parts[i][j][0]].A[i] for j in range(0,len(parts[i]))])
+        #attr_values[i].sort()
+    attr_values = findAttributeValues(entries,len(attributes))
     
     for i in range(0,len(attributes)):
         cutpoints.append([round(attr_values[i][0] + j*(attr_values[i][-1] - attr_values[i][0])/(k[i]),7) for j in range(1,k[i])])
@@ -592,55 +626,82 @@ def globalEqualIntervalWidth(entries, attributes):
 ###################
 # merge cutpoints #
 ###################
-#def merge(entries, attributes):
+def merge(entries, cutpoints):
+    if status==1: print("Merging cutpoints")
+    # Diagnostics on (1) or off (0)?
+    d = 1
+    
+    
+    diag("coming soon",d)
     
     
 ###################
 # Begin execution #
 ###################
-def main():
-    
-    # file selection
-    user_input = 1
-    if user_input == 1:
-        filename = selectFile()
-        file = openfile(filename)
-    else:
-        file = openfile("jerzy2.txt")
-        
-        
-    (entries,attributes,decision) = parsefile2(file)
-    
-    if not(isconsistant(entries,len(attributes))):
-            print("Sorry, the provided table is not consistant")
-            quit()
-
-
-    while True:
-        print("\nWhich discretization method would you like to use?")
-        print("1: Global conditional entropy")
-        print("2: Global equal frequency per interval")
-        print("3: Global equal interval width")
-        user_input = get_user_input("> ")
-        if user_input == "1":
-            print("\nOk.  Calculating...")
-            (dis_entries,cutpoints) = globalConditionalEntropy(entries, attributes)
-            break
-        elif user_input == "2":
-            print("\nOk.  Calculating...")
-            (dis_entries,cutpoints) = globalEqualFrequencyPerInterval(entries, attributes)
-            break
-        elif user_input == "3":
-            print("\nOk.  Calculating...")
-            (dis_entries,cutpoints) = globalEqualIntervalWidth(entries, attributes)
-            break
+class main():
+    def discretize(self):
+        # file selection
+        user_input = 0
+        if user_input == 1:
+            filename = selectFile()
+            file = openfile(filename)
         else:
-            print("Invalid selection, please try again")
+            file = openfile("jerzy3.txt")
+            
+            
+        (entries,attributes,decision) = parsefile2(file)
         
-    (datafilename,numbfilename) = table2file(dis_entries,attributes,cutpoints,decision)
-    diag("Table written to " + str(datafilename) + "\nCutpoint info written to " + numbfilename,1)
+        if not(isconsistant(entries,len(attributes))):
+                print("Sorry, the provided table is not consistant")
+                quit()
+
+
+        while True:
+            print("\nWhich discretization method would you like to use?")
+            print("1: Global conditional entropy")
+            print("2: Global equal frequency per interval")
+            print("3: Global equal interval width")
+            user_input = "2"#get_user_input("> ")
+            if user_input == "1":
+                print("\nOk.  Calculating...")
+                (dis_entries,cutpoints) = globalConditionalEntropy(entries, attributes,decision)
+                merge(entries, cutpoints)
+                break
+            elif user_input == "2":
+                print("\nOk.  Calculating...")
+                (dis_entries,cutpoints) = globalEqualFrequencyPerInterval(entries, attributes)
+                merge(entries, cutpoints)
+                break
+            elif user_input == "3":
+                print("\nOk.  Calculating...")
+                (dis_entries,cutpoints) = globalEqualIntervalWidth(entries, attributes)
+                merge(entries, cutpoints)
+                break
+            else:
+                print("Invalid selection, please try again")
+            
+        (datafilename,numbfilename) = table2file(dis_entries,attributes,cutpoints,decision)
+        diag("Table written to " + str(datafilename) + "\nCutpoint info written to " + numbfilename,1)
+            
+        file.close()
         
-    file.close()
-        
+    def __init__(self):
+        while True:
+            self.discretize()
+            
+            while True:
+                print("\n\nWould you like to perform another discretization (y or n)?")
+                user_input = "n"#get_user_input("> ")
                 
+                if user_input.lower() == "y":
+                    break
+                elif user_input.lower() == "n":
+                    print("\nOk.  Quitting")
+                    quit()
+                else:
+                    print("\nerror: Invalid choice, please try again")
+                    continue
+        
+        
+
 main()
