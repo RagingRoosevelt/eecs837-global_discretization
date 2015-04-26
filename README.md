@@ -1,5 +1,5 @@
 # EECS 837 - Final project
-## Theodore Lindsey - 2620216
+## Theodore Lindsey
 
 ### About
 
@@ -26,3 +26,6 @@ entry for files in the same directory as the ```.py``` files.
 Use ```$ python3 ./main.py``` to get started.
 
 ### [Assignment](http://people.eecs.ku.edu/~jerzy/proj-837.pdf)
+
+### Notes
+
