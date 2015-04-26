@@ -64,12 +64,12 @@ def parsefile(file):
                     attributes += line#[0:-1]
             elif got_attributes == 2: # done reading attributes
                 diag("Reading attribute values",d)
-                #attribute_values.append(line)
+                
                 if len(line)+len(attribute_values) < len(attributes):
                     diag("\nline #" + str(current_line) + " didn't finish the entry (" + str(len(line)+len(attribute_values)) + " vs " + str(len(attributes)) + ")",d)
                     float(line[-1])
                     attribute_values += line
-                elif len(line)-1 + len(attribute_values) == len(attributes):
+                elif len(line)-1 + len(attribute_values) >= len(attributes):
                     diag("\nline #" + str(current_line) + " finished the entry (" + str(len(line)-1+len(attribute_values)) + " vs " + str(len(attributes)) + ")",d)
                     attribute_values += [float(val) for val in line[0:-1]]
                     decision_value = line[-1]
@@ -80,6 +80,8 @@ def parsefile(file):
                 else:
                     print("error: Problem reading line #" + str(current_line))
                     quit()
+    
+
 
     return (entries,attributes,decision)
 
@@ -90,7 +92,9 @@ def parsefile(file):
 def partitionD(entries):
     if status==1: print("Partitioning the decision")
     Dpart = [[0]]
-    print(entries[0].D)
+    
+
+    
     concepts = [entries[0].D]
     
     # Build partition identifiers
@@ -677,7 +681,7 @@ class main():
         else:
             file = openfile("jerzy3.txt")
             
-            
+        print("\nOk. Reading file..."
         (entries,attributes,decision) = parsefile(file)
         file.close()
         
@@ -696,16 +700,19 @@ class main():
             user_input = get_user_input("> ")
             if user_input == "1":
                 print("\nOk.  Calculating...")
+                print("(note: this could take a while for large tables")
                 (dis_entries,cutpoints) = globalConditionalEntropy(entries, attributes,decision)
                 (dis_entries,cutpoints) = merge(entries, cutpoints, attributes)
                 break
             elif user_input == "2":
                 print("\nOk.  Calculating...")
+                print("(note: this could take a while for large tables")
                 (dis_entries,cutpoints) = globalEqualFrequencyPerInterval(entries, attributes)
                 (dis_entries,cutpoints) = merge(entries, cutpoints, attributes)
                 break
             elif user_input == "3":
                 print("\nOk.  Calculating...")
+                print("(note: this could take a while for large tables")
                 (dis_entries,cutpoints) = globalEqualIntervalWidth(entries, attributes)
                 (dis_entries,cutpoints) = merge(entries, cutpoints, attributes)
                 break
