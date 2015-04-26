@@ -81,7 +81,8 @@ def table2file(entries,attributes,cutpoints,attr_values,decision,datafilename="t
         for val in [entry.A[i] for i in entry.A]:
             datafile.write("\t\t" + str(val))
         datafile.write("\t\t" + str(entry.D))
-        
+    
+    datafile.write("\n")
     datafile.close()
     
     

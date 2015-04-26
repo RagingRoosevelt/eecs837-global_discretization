@@ -90,6 +90,7 @@ def parsefile(file):
 def partitionD(entries):
     if status==1: print("Partitioning the decision")
     Dpart = [[0]]
+    print(entries[0].D)
     concepts = [entries[0].D]
     
     # Build partition identifiers
@@ -105,7 +106,8 @@ def partitionD(entries):
             if not(i in Dpart[j]) and (entries[i].D == concepts[j]):
                 Dpart[j].append(i)
         
-    #print(Dpart)
+    
+    
     return Dpart
 
 ##################################################
