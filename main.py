@@ -63,14 +63,15 @@ def parsefile(file):
                 else: # attribute list doesn't end on this line
                     attributes += line#[0:-1]
             elif got_attributes == 2: # done reading attributes
-                diag("Reading attribute values",d)
-                
-                if len(line)+len(attribute_values) < len(attributes):
-                    diag("\nline #" + str(current_line) + " didn't finish the entry (" + str(len(line)+len(attribute_values)) + " vs " + str(len(attributes)) + ")",d)
+                diag("\nReading attribute values (line #" + str(current_line) + ")",d)
+                diag("partial line test : " + str(len(line)+len(attribute_values)) + " vs " + str(len(attributes)), d)
+                diag("complete line test: " + str(len(line)-1+len(attribute_values)) + " vs " + str(len(attributes)), d)
+                if len(line)+len(attribute_values) <= len(attributes):
+                    diag("line #" + str(current_line) + " didn't finish the entry (" + str(len(line)+len(attribute_values)) + " vs " + str(len(attributes)) + ")",d)
                     float(line[-1])
                     attribute_values += line
-                elif len(line)-1 + len(attribute_values) >= len(attributes):
-                    diag("\nline #" + str(current_line) + " finished the entry (" + str(len(line)-1+len(attribute_values)) + " vs " + str(len(attributes)) + ")",d)
+                elif len(line)-1 + len(attribute_values) == len(attributes):
+                    diag("line #" + str(current_line) + " finished the entry (" + str(len(line)-1+len(attribute_values)) + " vs " + str(len(attributes)) + ")",d)
                     attribute_values += [float(val) for val in line[0:-1]]
                     decision_value = line[-1]
                     entries[i] = entry(attribute_values, decision_value)
@@ -78,7 +79,7 @@ def parsefile(file):
                     attribute_values = []
                     i += 1
                 else:
-                    print("error: Problem reading line #" + str(current_line))
+                    print("\n\nerror: Problem reading line #" + str(current_line))
                     quit()
     
 
@@ -679,11 +680,12 @@ class main():
             else:
                 file = openfile(filename)
         else:
-            file = openfile("jerzy3.txt")
+            file = openfile("jerzy1.txt")
             
-        print("\nOk. Reading file..."
+        print("\nOk. Reading file...")
         (entries,attributes,decision) = parsefile(file)
         file.close()
+        
         
         if not(isConsistant(entries,len(attributes))):
             print("Sorry, the provided table is not consistant")
@@ -723,6 +725,7 @@ class main():
         attr_values = findAttributeValues(dis_entries,len(attributes))
         (datafilename,numbfilename) = table2file(dis_entries,attributes,cutpoints,attr_values,decision)
         diag("Table written to " + str(datafilename) + "\nCutpoint info written to " + numbfilename,1)
+        
         
     def __init__(self):
         while True:

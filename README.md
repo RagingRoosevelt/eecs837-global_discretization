@@ -1,4 +1,5 @@
 # EECS 837 - Final project
+## Theodore Lindsey - 2620216
 
 ### About
 
