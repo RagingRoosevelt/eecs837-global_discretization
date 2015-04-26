@@ -5,7 +5,7 @@
 [x] entropy (calculate)
 [x] conditional entropy (calculate)
 [x] average block entropy (calculate)
-[ ] merge
+[x] merge
 [x] equal width: establish_cutpoints(k,attribute)
 [x] equal width: build new table
 [x] equal frequency: establish_cutpoints(k,attribute)
