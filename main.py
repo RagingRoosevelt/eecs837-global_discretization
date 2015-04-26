@@ -451,59 +451,65 @@ def cutpointsEqualFrequencyPerInterval(entries,attributes,attr_values,k):
     diag("partitions:\n" + str(parts) + "\n",d)
 
     
+    
+    # build groupings
     grouping = [[{"values": [], "length": 0} for x in range(0,k[attr])] for attr in range(0,len(attributes))]
     for attr in range(0,len(attributes)):
         values = [val for val in value_entry[attr]]
         values.sort()
 
+        values_needed = k[attr]
+        values_left = len(values)
+
         for grp in range(0,k[attr]):
-            diag("\nValues for attribute #" + str(attr) + ": " + str(values),1)
-            diag("Working with group #" + str(grp),1)
+            diag("\nValues for attribute #" + str(attr) + ": " + str(values) + " (cover " + str(total_entries) + " entries)",d)
+            diag("=== Working with group #" + str(grp) + " out of " + str(k[attr]) + " groups ===",d)
             for value in range(0,len(values)):
                 diag("Is " + str(values[value]) + " in " + str(grouping[attr]) + "?",d)
                 if not(values[value] in [inner for outer in [g["values"] for g in grouping[attr]] for inner in outer]):
-                    diag("checking " + str(values[value]),1)
-                    diag("Comparing:",d)
+                    diag("=Comparing difference in number of entries if we add " + str(values[value]) + " (" + str(len(value_entry[attr][values[value]])) + " entries) to the group:",d)
                     
                     old_length = total_entries / float(k[attr]) - grouping[attr][grp]["length"]
                     new_length = total_entries / float(k[attr]) - grouping[attr][grp]["length"] - len(value_entry[attr][values[value]])
-                    diag(str(old_length) + " to " + str(new_length),1)
-                    if ((abs(old_length) > abs(new_length))) or (grp == k[attr]-1) or (len(grouping[attr][grp]["values"]) == 0):
+                    diag(str(old_length) + " (old) vs " + str(new_length) + " (new)",d) 
+                    
+                    if ((abs(old_length) > abs(new_length))and (values_needed < values_left)) or (len(grouping[attr][grp]["values"]) == 0) or (grp == k[attr]-1) or (len(grouping[attr][grp]["values"]) == 0):
                         grouping[attr][grp]["length"] += len(value_entry[attr][values[value]])
                         grouping[attr][grp]["values"].append(values[value])
-                        diag("Added " + str(values[value]) + " to the group. Group #" + str(grp) + " now contains " + str(grouping[attr][grp]["length"]) + " out of " + str(total_entries) + " entries",d)
+                        values_left -= 1
+                        diag("Added " + str(values[value]) + " to the group. Group #" + str(grp) + " now contains " \
+                             + str(grouping[attr][grp]["length"]) + " out of " + str(total_entries) + " entries (target: " + str(total_entries / float(k[attr])) + ")",d)
                     else:
                         diag("Not adding " + str(values[value]) + " to this group",d)
-                        diag("Group #" + str(grp) + " found for attribute #" + str(attr) + "\n",d)
+                        values_needed -= 1
+                        diag("Group #" + str(grp) + " found for attribute #" + str(attr) + " (covers " + str(grouping[attr][grp]["length"]) + " entries)\n",d)
                         break
+        diag("Grouping for the attribute is " + str(grouping[attr]) + "\n\n",d)
                     
-    logfile = open("log.txt","w")
-    logfile.write("\n==Groupings==\n")
+    
     diag("\n==Groupings==",d)
     for attr in range(0,len(attributes)):
         diag("For attribute #" + str(attr) + ": " + str(grouping[attr])+"\n",d)
-        logfile.write("For attribute #" + str(attr) + ": " + str(grouping[attr])+"\n\n")
     diag("",d)
 
 
     d=0
+    # build cutpoints from groupings
     for attr in range(0,len(attributes)):
-        logfile.write("\n\n" + str(grouping[attr]) + "\n\n")
-        print("\n\n" + str(grouping[attr]) + "\n")
+        diag("\n\nGrouping: " + str(grouping[attr]) + "\n",d)
         for group in range(0,len(grouping[attr])-1):
-            diag("\n\n",d)
-            logfile.write("\n\nWorking with attribute #" + str(attr) + ", group #" + str(group) + ".  It has a k value of " + str(k[attr]) + "\n" + str(grouping[attr][group]) + "\n")
-            print("Working with attribute #" + str(attr) + ", group #" + str(group) + ".  It has a k value of " + str(k[attr]))
-            print("" + str(grouping[attr][group]) + "")
-            logfile.write(str(grouping[attr][group]["values"][-1]) + "\n" + str(grouping[attr][group+1]["values"]) + str(k) + "\n")
+            diag("\n\nWorking with attribute #" + str(attr) + ", group #" + str(group) + ".  It has a k value of " + str(k[attr]) + " (" + str(k) + ")",d)
+            diag("Group contains: " + str(grouping[attr][group]) + "",d)
+
             diag(str(grouping[attr][group]["values"][-1]),d)
-            diag(str(grouping[attr][group+1]["values"]),d) # <---- no values in the grouping: grouping[attr][group+1]["values"] == []
-            print(str(k))
-            # need to address the possibility that an attribute only has one value (and thus only ends up with a single group)
-            logfile.write("Groups (#" + str(group) + ", #" + str(group+1) + "): " + str(grouping[attr][group]["values"]) + ", " + str(grouping[attr][group+1]["values"]) + "\n" + "Cutpoints: " + str(cutpoints[attr]) + "\n")
+            diag(str(grouping[attr][group+1]["values"]),d) 
+            
+
+            diag("Groups (#" + str(group) + ", #" + str(group+1) + "): " + str(grouping[attr][group]["values"]) + ", " + str(grouping[attr][group+1]["values"]),d)
+            
             cutpoints[attr].append(round((grouping[attr][group+1]["values"][0] + grouping[attr][group]["values"][-1])/2.0,6))
-            diag("Groups: " + str(grouping[attr][group]["values"]) + ", " + str(grouping[attr][group+1]["values"]),d)
-            diag("Cutpoints: " + str(cutpoints[attr]),d)
+            
+            diag("Cutpoints (updated): " + str(cutpoints[attr]) + " (added cutpoint " + str(round((grouping[attr][group+1]["values"][0] + grouping[attr][group]["values"][-1])/2.0,6)) + ")",d)
     
     dis_entries = buildDiscretizedTable(entries,cutpoints,attr_values)
         
@@ -659,10 +665,13 @@ def merge(entries, cutpoints, attributes):
 class main():
     def discretize(self):
         # file selection
-        user_input = 0
+        user_input = 1
         if user_input == 1:
             filename = selectFile()
-            file = openfile(filename)
+            if filename == 0:
+                quit()
+            else:
+                file = openfile(filename)
         else:
             file = openfile("jerzy3.txt")
             
@@ -671,16 +680,18 @@ class main():
         file.close()
         
         if not(isConsistant(entries,len(attributes))):
-                print("Sorry, the provided table is not consistant")
-                quit()
+            print("Sorry, the provided table is not consistant")
+            quit()
 
 
+        
+        print("\nWhich discretization method would you like to use?")
+        print("1: Global conditional entropy")
+        print("2: Global equal frequency per interval")
+        print("3: Global equal interval width")
+        print("4: Exit")
         while True:
-            print("\nWhich discretization method would you like to use?")
-            print("1: Global conditional entropy")
-            print("2: Global equal frequency per interval")
-            print("3: Global equal interval width")
-            user_input = "1"#get_user_input("> ")
+            user_input = get_user_input("> ")
             if user_input == "1":
                 print("\nOk.  Calculating...")
                 (dis_entries,cutpoints) = globalConditionalEntropy(entries, attributes,decision)
@@ -696,8 +707,10 @@ class main():
                 (dis_entries,cutpoints) = globalEqualIntervalWidth(entries, attributes)
                 (dis_entries,cutpoints) = merge(entries, cutpoints, attributes)
                 break
+            elif user_input == "4":
+                quit()
             else:
-                print("Invalid selection, please try again")
+                print("\nInvalid selection, please try again\n")
         attr_values = findAttributeValues(dis_entries,len(attributes))
         (datafilename,numbfilename) = table2file(dis_entries,attributes,cutpoints,attr_values,decision)
         diag("Table written to " + str(datafilename) + "\nCutpoint info written to " + numbfilename,1)
@@ -708,7 +721,7 @@ class main():
             
             while True:
                 print("\n\nWould you like to perform another discretization (y or n)?")
-                user_input = "n"#get_user_input("> ")
+                user_input = get_user_input("> ")
                 
                 if user_input.lower() == "y":
                     break

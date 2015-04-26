@@ -63,7 +63,7 @@ def openfile(user_input=None):
 #######################
 # write Table to file #
 #######################
-def table2file(entries,attributes,cutpoints,attr_values,decision,datafilename="output.data.txt",intfilename="output.int.txt"):
+def table2file(entries,attributes,cutpoints,attr_values,decision,datafilename="test.data",intfilename="test.int"):
     d = 1
     
     diag("\nWriting table and cutput info to disk",d)
@@ -72,15 +72,15 @@ def table2file(entries,attributes,cutpoints,attr_values,decision,datafilename="o
     # Write attribute identifiers
     datafile.write("[ ")
     for attr in attributes:
-        datafile.write(str(attr) + " ")
+        datafile.write(str(attr) + "  ")
     datafile.write(str(decision)+" ]")
     
     # Write each entry
     for entry in [entries[i] for i in entries]:
         datafile.write("\n")
         for val in [entry.A[i] for i in entry.A]:
-            datafile.write(" " + str(val))
-        datafile.write("\t" + str(entry.D))
+            datafile.write("\t\t" + str(val))
+        datafile.write("\t\t" + str(entry.D))
         
     datafile.close()
     
@@ -123,7 +123,18 @@ def diag(string,diagnostics=0):
 # file scanning / selection #
 #############################
 def selectFile():
-    choice = get_user_input("\n\nWould you like to: \n1: Select from a list of files\n2: Enter a filename manually?\n> ")
+    print("\n\nWould you like to: ")
+    print("1: Select a file from current directory listing")
+    print("2: Enter a filename manually")
+    print("3: Quit")
+    while True:
+        choice = get_user_input("> ")
+        
+        if choice in ["1","2","3"]:
+            break
+        else:
+            print("\nerror: Selection out of bounds, please select a value between 1 and 3\n")
+        
     
     if choice == "1":
         files = [""]
@@ -148,6 +159,8 @@ def selectFile():
                 print("\nerror: Invalid selection, please try again")
     elif choice == "2":
         return openfile()
+    elif choice == "3":
+        return 0
     else:
         print("\nerror: Invalid selection, defaulting to manual entry\n")
         return openfile()
