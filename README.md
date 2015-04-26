@@ -11,7 +11,7 @@ This project reads lers-type files within the directory containing the python co
 
 ### Requirements
 
-This program is compatible with 3.x (a small amount of tweaking shuold make it compatible with python
+This program is compatible with 3.x (a small amount of tweaking should make it compatible with python
 2.x). It is necessary to have both 
 [```main.py```](https://github.com/RagingRoosevelt/eecs837_global-discretization/blob/master/main.py) 
 and  
@@ -29,3 +29,6 @@ Use ```$ python3 ./main.py``` to get started.
 
 ### Notes
 
+To the best of my knowledge, everything functions. Final remarks:
+* equal frequency - The algorithm is wrong, I think.  It has problems with attribute values that have a huge covering compared to the other attribute values and it skews results to the first groupings when this occurs
+* python versions - It shouldn't be difficult to get this working with python2.x.  In testing, the only problem appeared to be array indexes weren't being cast to ints properly.  I suspect this is because python 3.x and 2.x handle division differently (/ vs //)
