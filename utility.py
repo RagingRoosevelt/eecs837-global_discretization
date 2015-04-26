@@ -63,7 +63,7 @@ def openfile(user_input=None):
 #######################
 # write Table to file #
 #######################
-def table2file(entries,attributes,cutpoints,decision,datafilename="output.data.txt",intfilename="output.int.txt"):
+def table2file(entries,attributes,cutpoints,attr_values,decision,datafilename="output.data.txt",intfilename="output.int.txt"):
     d = 1
     
     diag("\nWriting table and cutput info to disk",d)
@@ -87,11 +87,21 @@ def table2file(entries,attributes,cutpoints,decision,datafilename="output.data.t
     
     intfile = open(intfilename,'w')
     
-    for i in range(0,len(attributes)):
-        intfile.write("cutpoints for " + str(attributes[i]) + ":\n")
-        for point in cutpoints[i][0:-1]:
-            intfile.write(str(point) + ", ")
-        intfile.write(str(cutpoints[i][-1]) + "\n")
+    intfile.write("=============\n= Cutpoints =\n=============")
+    for attr in range(0,len(attributes)):
+        intfile.write("\nCutpoints for " + str(attributes[attr]) + ":\n")
+        if len(cutpoints[attr]) == 0:
+            intfile.write("none\n")
+        else:
+            for point in cutpoints[attr][0:-1]:
+                intfile.write(str(point) + ", ")
+            intfile.write(str(cutpoints[attr][-1]) + "\n")
+            
+    intfile.write("\n=============\n= Intervals =\n=============")
+    for attr in range(0,len(attributes)):
+        intfile.write("\nIntervals for " + str(attributes[attr]) + ":\n")
+        for interval in attr_values[attr]:
+            intfile.write(str(interval) + "\n")
     
     
     intfile.close()

@@ -24,45 +24,10 @@ class entry():
 # function to parse file and extract (a,v) and (d,v) pairs #
 ############################################################
 def parsefile(file):
+    d=0
     if status==1: print("Parsing the lers input file")
-    # Diagnostics on (1) or off (0)?
-    d = 0
-    
-    
-    entries = {}
-    i = 0
-    attributes = []
-    attribute_values = []
-    decision = ""
-    decision_value = ""
-    for line in file:
-        line = line.split()
-        if line == []:
-            continue
-        elif (line[0] == "<") or (line[0] == "!"):
-            continue
-        elif (line[0] == "["):
-            attributes = line[1:-2]
-            decision = line[-2]
-            diag("found the attribute names: " + str(attributes),d)
-            diag("found the decision name: " + str(decision),d)
-        else:
-            attribute_values = [float(x) for x in line[0:-1]]
-            decision_value = line[-1]
-            diag(str(attribute_values) + " " + str(decision_value))
-            
-            entries[i] = entry(attribute_values, decision_value)
-            i += 1
-        
-    return (entries,attributes,decision)
-
-
-############################################################
-# function to parse file and extract (a,v) and (d,v) pairs #
-############################################################
-def parsefile2(file):
-    if status==1: print("Parsing the lers input file")
-    got_attributes = 0
+    current_line = 0
+    got_attributes = 0 # 0=haven't started reading, 1=in progress, 2=done
     attributes = []
     attribute_values = []
     i = 0
@@ -70,6 +35,7 @@ def parsefile2(file):
     decision_value = ""
     entries = {}
     for line in file:
+        current_line += 1
         line = line.split()
         if line == []: # empty line
             continue
@@ -80,27 +46,41 @@ def parsefile2(file):
                 attributes = line[1:-2]
                 decision = line[-2]
                 got_attributes = 2
+                attr_values_to_gather = len(attributes)
             else: # attribute list doesn't end on this line
                 got_attributes = 1
-                attributes = line[1:-1]
+                attributes += line[1:len(line)]
         else:
             if got_attributes == 1: # reading attributes still
                 if line[-1] == ']': # attribute list ends on this line
-                    attributes = line[0:-2]
+                    attributes += line[0:-2]
                     decision = line[-2]
                     got_attributes = 2
+                    attr_values_to_gather = len(attributes)
+                    diag("Finished reading attributes.\n\nDecision is " + str(decision),d)
+                    diag("There are a total of " + str(len(attributes)) + " to find",d)
+                    diag("The first attribute read was " + str(attributes[0]) + " and the last attribute read was " + str(attributes[-1]),d)
                 else: # attribute list doesn't end on this line
-                    attributes = line[0:-1]
+                    attributes += line#[0:-1]
             elif got_attributes == 2: # done reading attributes
-                attribute_values = [float(x) for x in line[0:-1]]
-                decision_value = line[-1]
-                #print(str(attribute_values) + " " + str(decision_value))
-                
-                entries[i] = entry(attribute_values, decision_value)
-                i += 1
+                diag("Reading attribute values",d)
+                #attribute_values.append(line)
+                if len(line)+len(attribute_values) < len(attributes):
+                    diag("\nline #" + str(current_line) + " didn't finish the entry (" + str(len(line)+len(attribute_values)) + " vs " + str(len(attributes)) + ")",d)
+                    float(line[-1])
+                    attribute_values += line
+                elif len(line)-1 + len(attribute_values) == len(attributes):
+                    diag("\nline #" + str(current_line) + " finished the entry (" + str(len(line)-1+len(attribute_values)) + " vs " + str(len(attributes)) + ")",d)
+                    attribute_values += [float(val) for val in line[0:-1]]
+                    decision_value = line[-1]
+                    entries[i] = entry(attribute_values, decision_value)
                     
-                    
-        
+                    attribute_values = []
+                    i += 1
+                else:
+                    print("error: Problem reading line #" + str(current_line))
+                    quit()
+
     return (entries,attributes,decision)
 
 
@@ -169,7 +149,7 @@ def partitionAttributes(part1,part2):
 ################################################################
 # function to check consistency between attribute and decision # 
 ################################################################
-def isconsistant(entries,num_attributes):
+def isConsistant(entries,num_attributes):
     if status==1: print("Checking for consistancy")
     # Diagnostics on (1) or off (0)?
     d = 0
@@ -363,7 +343,7 @@ def globalConditionalEntropy(entries, attributes,decision):
         temp_entries = buildDiscretizedTable(entries,cutpoints,attr_values)
         
         # check if the new table is consistant.  If not, increment a k.
-        if isconsistant(temp_entries,len(attributes)):
+        if isConsistant(temp_entries,len(attributes)):
             diag("Discretized table is consistant",d)
             dis_entries = temp_entries
             break
@@ -384,7 +364,7 @@ def globalConditionalEntropy(entries, attributes,decision):
                 diag("There are a total of " + str([len(vals) for vals in attr_values]) + " values per attribute\n",d)
             else:
                 print("error: The computed table is not consistant and there are no more cutpoints left to introduce")
-                table2file(temp_entries,attributes,cutpoints,decision)
+                table2file(temp_entries,attributes,cutpoints,attr_values,decision)
                 quit()
     
     
@@ -413,7 +393,7 @@ def globalEqualFrequencyPerInterval(entries, attributes):
         diag("\nattr values: " + str(values),d)
         diag("cutpoints  : "+str(cutpoints)+"\n",d)
         
-        if isconsistant(dis_entries,len(attributes)):
+        if isConsistant(dis_entries,len(attributes)):
             diag("Cutpoints found, table is consistant.\n",d)
             break
         else:
@@ -477,17 +457,18 @@ def cutpointsEqualFrequencyPerInterval(entries,attributes,attr_values,k):
         values.sort()
 
         for grp in range(0,k[attr]):
-            diag("\nValues for attribute #" + str(attr) + ": " + str(values),d)
+            diag("\nValues for attribute #" + str(attr) + ": " + str(values),1)
+            diag("Working with group #" + str(grp),1)
             for value in range(0,len(values)):
                 diag("Is " + str(values[value]) + " in " + str(grouping[attr]) + "?",d)
                 if not(values[value] in [inner for outer in [g["values"] for g in grouping[attr]] for inner in outer]):
-                    diag("checking " + str(values[value]),d)
+                    diag("checking " + str(values[value]),1)
                     diag("Comparing:",d)
                     
                     old_length = total_entries / float(k[attr]) - grouping[attr][grp]["length"]
                     new_length = total_entries / float(k[attr]) - grouping[attr][grp]["length"] - len(value_entry[attr][values[value]])
-                    diag(str(old_length) + " to " + str(new_length),d)
-                    if ((abs(old_length) > abs(new_length))) or (grp == k[attr]-1):
+                    diag(str(old_length) + " to " + str(new_length),1)
+                    if ((abs(old_length) > abs(new_length))) or (grp == k[attr]-1) or (len(grouping[attr][grp]["values"]) == 0):
                         grouping[attr][grp]["length"] += len(value_entry[attr][values[value]])
                         grouping[attr][grp]["values"].append(values[value])
                         diag("Added " + str(values[value]) + " to the group. Group #" + str(grp) + " now contains " + str(grouping[attr][grp]["length"]) + " out of " + str(total_entries) + " entries",d)
@@ -495,18 +476,33 @@ def cutpointsEqualFrequencyPerInterval(entries,attributes,attr_values,k):
                         diag("Not adding " + str(values[value]) + " to this group",d)
                         diag("Group #" + str(grp) + " found for attribute #" + str(attr) + "\n",d)
                         break
-    
+                    
+    logfile = open("log.txt","w")
+    logfile.write("\n==Groupings==\n")
     diag("\n==Groupings==",d)
     for attr in range(0,len(attributes)):
         diag("For attribute #" + str(attr) + ": " + str(grouping[attr])+"\n",d)
+        logfile.write("For attribute #" + str(attr) + ": " + str(grouping[attr])+"\n\n")
     diag("",d)
 
 
+    d=0
     for attr in range(0,len(attributes)):
-        #print(grouping[attr])
+        logfile.write("\n\n" + str(grouping[attr]) + "\n\n")
+        print("\n\n" + str(grouping[attr]) + "\n")
         for group in range(0,len(grouping[attr])-1):
+            diag("\n\n",d)
+            logfile.write("\n\nWorking with attribute #" + str(attr) + ", group #" + str(group) + ".  It has a k value of " + str(k[attr]) + "\n" + str(grouping[attr][group]) + "\n")
+            print("Working with attribute #" + str(attr) + ", group #" + str(group) + ".  It has a k value of " + str(k[attr]))
+            print("" + str(grouping[attr][group]) + "")
+            logfile.write(str(grouping[attr][group]["values"][-1]) + "\n" + str(grouping[attr][group+1]["values"]) + str(k) + "\n")
+            diag(str(grouping[attr][group]["values"][-1]),d)
+            diag(str(grouping[attr][group+1]["values"]),d) # <---- no values in the grouping: grouping[attr][group+1]["values"] == []
+            print(str(k))
+            # need to address the possibility that an attribute only has one value (and thus only ends up with a single group)
+            logfile.write("Groups (#" + str(group) + ", #" + str(group+1) + "): " + str(grouping[attr][group]["values"]) + ", " + str(grouping[attr][group+1]["values"]) + "\n" + "Cutpoints: " + str(cutpoints[attr]) + "\n")
             cutpoints[attr].append(round((grouping[attr][group+1]["values"][0] + grouping[attr][group]["values"][-1])/2.0,6))
-            diag("\nGroups: " + str(grouping[attr][group]["values"]) + ", " + str(grouping[attr][group+1]["values"]),d)
+            diag("Groups: " + str(grouping[attr][group]["values"]) + ", " + str(grouping[attr][group+1]["values"]),d)
             diag("Cutpoints: " + str(cutpoints[attr]),d)
     
     dis_entries = buildDiscretizedTable(entries,cutpoints,attr_values)
@@ -519,23 +515,32 @@ def cutpointsEqualFrequencyPerInterval(entries,attributes,attr_values,k):
 # cutpoints: equal interval width #
 ###################################
 def buildDiscretizedTable(entries,cutpoints,attr_values):
+    d=0
     
     dis_entries = {}
     for i in range(0,len(entries)):
         temp = []
         for attr in entries[i].A:
             cutpoints[attr].sort()
-            for j in range(0,len(cutpoints[attr])):
-                if entries[i].A[attr] < cutpoints[attr][j]:
-                    if j==0:
-                        temp.append(str(attr_values[attr][0]) + ".." + str(cutpoints[attr][j]))
-                    else: 
-                        temp.append(str(cutpoints[attr][j-1]) + ".." + str(cutpoints[attr][j]))
-                        
-                    break
             
-            try:temp[attr]
-            except:temp.append(str(cutpoints[attr][-1]) + ".." + str(attr_values[attr][-1]))
+            diag(cutpoints[attr],d)
+            
+            if len(cutpoints[attr]) == 0:
+                temp.append(str(attr_values[attr][0]) + ".." + str(attr_values[attr][-1]))
+                continue
+            else:
+                for j in range(0,len(cutpoints[attr])):
+                    
+                    if entries[i].A[attr] < cutpoints[attr][j]:
+                        if j==0:
+                            temp.append(str(attr_values[attr][0]) + ".." + str(cutpoints[attr][j]))
+                        else: 
+                            temp.append(str(cutpoints[attr][j-1]) + ".." + str(cutpoints[attr][j]))
+                            
+                        break
+                
+                try:temp[attr]
+                except:temp.append(str(cutpoints[attr][-1]) + ".." + str(attr_values[attr][-1]))
             
         dis_entries[i] = entry(temp, entries[i].D)
     
@@ -594,7 +599,7 @@ def globalEqualIntervalWidth(entries, attributes):
         diag("\nAttr values: " + str(values),d)
         diag("Cutpoints  : "+str(cutpoints)+"\n",d)
         
-        if isconsistant(dis_entries,len(attributes)):
+        if isConsistant(dis_entries,len(attributes)):
             diag("Cutpoints found, table is consistant.\n",d)
             break
         else:
@@ -626,13 +631,26 @@ def globalEqualIntervalWidth(entries, attributes):
 ###################
 # merge cutpoints #
 ###################
-def merge(entries, cutpoints):
+def merge(entries, cutpoints, attributes):
     if status==1: print("Merging cutpoints")
     # Diagnostics on (1) or off (0)?
-    d = 1
+    d = 0
     
+    attr_values = findAttributeValues(entries,len(attributes))
     
-    diag("coming soon",d)
+    for attr in range(0,len(attributes)):
+        for cutpoint in cutpoints[attr]:
+            temp_cutpoints = cutpoints            
+            temp_cutpoints[attr].remove(cutpoint)
+            
+            diag(temp_cutpoints,d)
+            dis_entries = buildDiscretizedTable(entries,temp_cutpoints,attr_values)
+            
+            if isConsistant(dis_entries,len(attributes)):
+                cutpoints = temp_cutpoints
+                diag("cutpoint " + str(cutpoint) + " removed from attribute #" + str(attr),d)
+    
+    return (dis_entries,cutpoints)
     
     
 ###################
@@ -649,9 +667,10 @@ class main():
             file = openfile("jerzy3.txt")
             
             
-        (entries,attributes,decision) = parsefile2(file)
+        (entries,attributes,decision) = parsefile(file)
+        file.close()
         
-        if not(isconsistant(entries,len(attributes))):
+        if not(isConsistant(entries,len(attributes))):
                 print("Sorry, the provided table is not consistant")
                 quit()
 
@@ -661,29 +680,27 @@ class main():
             print("1: Global conditional entropy")
             print("2: Global equal frequency per interval")
             print("3: Global equal interval width")
-            user_input = "2"#get_user_input("> ")
+            user_input = "1"#get_user_input("> ")
             if user_input == "1":
                 print("\nOk.  Calculating...")
                 (dis_entries,cutpoints) = globalConditionalEntropy(entries, attributes,decision)
-                merge(entries, cutpoints)
+                (dis_entries,cutpoints) = merge(entries, cutpoints, attributes)
                 break
             elif user_input == "2":
                 print("\nOk.  Calculating...")
                 (dis_entries,cutpoints) = globalEqualFrequencyPerInterval(entries, attributes)
-                merge(entries, cutpoints)
+                (dis_entries,cutpoints) = merge(entries, cutpoints, attributes)
                 break
             elif user_input == "3":
                 print("\nOk.  Calculating...")
                 (dis_entries,cutpoints) = globalEqualIntervalWidth(entries, attributes)
-                merge(entries, cutpoints)
+                (dis_entries,cutpoints) = merge(entries, cutpoints, attributes)
                 break
             else:
                 print("Invalid selection, please try again")
-            
-        (datafilename,numbfilename) = table2file(dis_entries,attributes,cutpoints,decision)
+        attr_values = findAttributeValues(dis_entries,len(attributes))
+        (datafilename,numbfilename) = table2file(dis_entries,attributes,cutpoints,attr_values,decision)
         diag("Table written to " + str(datafilename) + "\nCutpoint info written to " + numbfilename,1)
-            
-        file.close()
         
     def __init__(self):
         while True:
